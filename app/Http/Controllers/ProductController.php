@@ -16,7 +16,10 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['category'])->paginate(5);
+        $products = Product::with(['category'])
+        
+        ->orderBy('created_at', 'asc')
+        ->paginate(5);
         $categories = Category::all();
         $suppliers = Supplier::all();
         $sizes = Size::all();

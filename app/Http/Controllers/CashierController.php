@@ -25,7 +25,10 @@ class CashierController extends Controller
     // Menampilkan halaman kasir
     public function index()
     {
-        $products = Product::with('sizes')->where('stock', '>', 0)->get();
+        $products = Product::with('sizes')
+        ->where('stock', '>', 0)
+        ->orderBy('name', 'asc')
+        ->get();
         $storeProfile = StoreProfile::first();
         $paymentMethods = PaymentMethod::all();
         $categories = Category::all();

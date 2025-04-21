@@ -194,94 +194,94 @@
 
             // Fungsi untuk update tampilan keranjang
             // Fungsi untuk update tampilan keranjang
-function updateCart() {
-    cartItemsEl.innerHTML = '';
+            function updateCart() {
+                cartItemsEl.innerHTML = '';
 
-    if (cart.length === 0) {
-        cartItemsEl.appendChild(emptyCartMessage);
-        subtotalEl.textContent = 'Rp 0';
-        totalEl.textContent = 'Rp 0';
-        discountEl.textContent = 'Rp 0';
-        checkoutBtn.disabled = true;
-        return;
-    }
+                if (cart.length === 0) {
+                    cartItemsEl.appendChild(emptyCartMessage);
+                    subtotalEl.textContent = 'Rp 0';
+                    totalEl.textContent = 'Rp 0';
+                    discountEl.textContent = 'Rp 0';
+                    checkoutBtn.disabled = true;
+                    return;
+                }
 
-    let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    let discount = 0;
-    let total = subtotal - discount;
+                let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                let discount = 0;
+                let total = subtotal - discount;
 
-    subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-    discountEl.textContent = 'Rp ' + discount.toLocaleString('id-ID');
-    totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
+                subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+                discountEl.textContent = 'Rp ' + discount.toLocaleString('id-ID');
+                totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
 
-    cart.forEach((item, index) => {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'flex justify-between items-center py-2 border-b';
-        itemEl.innerHTML = `
-            <div class="flex-1">
-                <div class="font-medium">${item.name} ${item.size ? `(${item.size})` : ''}</div>
-                <div class="flex items-center mt-1">
-                    <button class="quantity-btn px-2 py-1 bg-gray-200 rounded" data-index="${index}" data-action="decrease">
-                        <i class="fas fa-minus text-xs"></i>
-                    </button>
-                    <input type="number" min="1" max="${item.stock}" 
-                        value="${item.quantity}" 
-                        class="quantity-input w-12 mx-2 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        data-index="${index}">
-                    <button class="quantity-btn px-2 py-1 bg-gray-200 rounded" data-index="${index}" data-action="increase">
-                        <i class="fas fa-plus text-xs"></i>
-                    </button>
-                    <span class="ml-4 text-blue-600">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                cart.forEach((item, index) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'flex justify-between items-center py-2 border-b';
+                    itemEl.innerHTML = `
+                <div class="flex-1">
+                    <div class="font-medium">${item.name} ${item.size ? `(${item.size})` : ''}</div>
+                    <div class="flex items-center mt-1">
+                        <button class="quantity-btn px-2 py-1 bg-gray-200 rounded" data-index="${index}" data-action="decrease">
+                            <i class="fas fa-minus text-xs"></i>
+                        </button>
+                        <input type="number" min="1" max="${item.stock}" 
+                            value="${item.quantity}" 
+                            class="quantity-input w-12 mx-2 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            data-index="${index}">
+                        <button class="quantity-btn px-2 py-1 bg-gray-200 rounded" data-index="${index}" data-action="increase">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                        <span class="ml-4 text-blue-600">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                    </div>
                 </div>
-            </div>
-            <button class="remove-btn ml-2 text-red-500 hover:text-red-700" data-index="${index}">
-                <i class="fas fa-trash"></i>
-            </button>
-        `;
-        cartItemsEl.appendChild(itemEl);
-    });
+                <button class="remove-btn ml-2 text-red-500 hover:text-red-700" data-index="${index}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+                    cartItemsEl.appendChild(itemEl);
+                });
 
-    // Tambahkan event listener untuk input manual
-    document.querySelectorAll('.quantity-input').forEach(input => {
-        input.addEventListener('change', function() {
-            const index = parseInt(this.dataset.index);
-            let newQuantity = parseInt(this.value);
-            
-            // Validasi input
-            if (isNaN(newQuantity) || newQuantity < 1) {
-                newQuantity = 1;
-                this.value = 1;
-            } else if (newQuantity > cart[index].stock) {
-                newQuantity = cart[index].stock;
-                this.value = cart[index].stock;
-                showErrorAlert('Stok tidak mencukupi');
+                // Tambahkan event listener untuk input manual
+                document.querySelectorAll('.quantity-input').forEach(input => {
+                    input.addEventListener('change', function () {
+                        const index = parseInt(this.dataset.index);
+                        let newQuantity = parseInt(this.value);
+
+                        // Validasi input
+                        if (isNaN(newQuantity) || newQuantity < 1) {
+                            newQuantity = 1;
+                            this.value = 1;
+                        } else if (newQuantity > cart[index].stock) {
+                            newQuantity = cart[index].stock;
+                            this.value = cart[index].stock;
+                            showErrorAlert('Stok tidak mencukupi');
+                        }
+
+                        cart[index].quantity = newQuantity;
+                        updateCart();
+                    });
+
+                    // Validasi saat mengetik
+                    input.addEventListener('keydown', function (e) {
+                        // Blokir karakter non-angka
+                        if (['e', 'E', '+', '-', '.'].includes(e.key)) {
+                            e.preventDefault();
+                        }
+                    });
+
+                    // Pastikan nilai tetap valid saat kehilangan fokus
+                    input.addEventListener('blur', function () {
+                        if (this.value === '') {
+                            this.value = 1;
+                            const index = parseInt(this.dataset.index);
+                            cart[index].quantity = 1;
+                            updateCart();
+                        }
+                    });
+                });
+
+                checkoutBtn.disabled = cart.length === 0 || !paymentMethodEl.value;
             }
-            
-            cart[index].quantity = newQuantity;
-            updateCart();
-        });
-
-        // Validasi saat mengetik
-        input.addEventListener('keydown', function(e) {
-            // Blokir karakter non-angka
-            if (['e', 'E', '+', '-', '.'].includes(e.key)) {
-                e.preventDefault();
-            }
-        });
-
-        // Pastikan nilai tetap valid saat kehilangan fokus
-        input.addEventListener('blur', function() {
-            if (this.value === '') {
-                this.value = 1;
-                const index = parseInt(this.dataset.index);
-                cart[index].quantity = 1;
-                updateCart();
-            }
-        });
-    });
-
-    checkoutBtn.disabled = cart.length === 0 || !paymentMethodEl.value;
-}
 
 
 
@@ -359,35 +359,35 @@ function updateCart() {
 
             // Event delegation untuk tombol quantity dan hapus
             cartItemsEl.addEventListener('click', function (e) {
-    // Tangani tombol +/-
-    if (e.target.closest('.quantity-btn')) {
-        const btn = e.target.closest('.quantity-btn');
-        const index = parseInt(btn.dataset.index);
-        const action = btn.dataset.action;
+                // Tangani tombol +/-
+                if (e.target.closest('.quantity-btn')) {
+                    const btn = e.target.closest('.quantity-btn');
+                    const index = parseInt(btn.dataset.index);
+                    const action = btn.dataset.action;
 
-        if (action === 'increase') {
-            if (cart[index].quantity < cart[index].stock) {
-                cart[index].quantity += 1;
-            } else {
-                showErrorAlert('Stok tidak mencukupi');
-            }
-        } else if (action === 'decrease') {
-            if (cart[index].quantity > 1) {
-                cart[index].quantity -= 1;
-            }
-        }
+                    if (action === 'increase') {
+                        if (cart[index].quantity < cart[index].stock) {
+                            cart[index].quantity += 1;
+                        } else {
+                            showErrorAlert('Stok tidak mencukupi');
+                        }
+                    } else if (action === 'decrease') {
+                        if (cart[index].quantity > 1) {
+                            cart[index].quantity -= 1;
+                        }
+                    }
 
-        updateCart();
-    }
+                    updateCart();
+                }
 
-    // Tangani tombol hapus
-    if (e.target.closest('.remove-btn')) {
-        const btn = e.target.closest('.remove-btn');
-        const index = parseInt(btn.dataset.index);
-        cart.splice(index, 1);
-        updateCart();
-    }
-});
+                // Tangani tombol hapus
+                if (e.target.closest('.remove-btn')) {
+                    const btn = e.target.closest('.remove-btn');
+                    const index = parseInt(btn.dataset.index);
+                    cart.splice(index, 1);
+                    updateCart();
+                }
+            });
 
             // Event listener untuk metode pembayaran
             paymentMethodEl.addEventListener('change', function () {
@@ -465,11 +465,11 @@ function updateCart() {
                 const alert = document.createElement('div');
                 alert.className = 'fixed top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 z-50 rounded shadow-lg';
                 alert.innerHTML = `
-                                                                            <div class="flex items-center">
-                                                                                <i class="fas fa-exclamation-circle mr-2"></i>
-                                                                                <span>${message}</span>
-                                                                            </div>
-                                                                        `;
+                                                                                <div class="flex items-center">
+                                                                                    <i class="fas fa-exclamation-circle mr-2"></i>
+                                                                                    <span>${message}</span>
+                                                                                </div>
+                                                                            `;
                 document.body.appendChild(alert);
 
                 setTimeout(() => {

@@ -47,6 +47,7 @@
             <table class="w-full mb-6">
                 <thead>
                     <tr class="border-b">
+                        <th class="text-left pb-2">No.</th>
                         <th class="text-left pb-2">Produk</th>
                         <th class="text-right pb-2">Harga</th>
                         <th class="text-right pb-2">Qty</th>
@@ -56,6 +57,7 @@
                 <tbody>
                     @foreach($transaction->details as $item)
                     <tr class="border-b">
+                        <td class="py-2">{{ $loop->iteration }}</td>
                         <td class="py-2">
                             {{ $item->product->name }}
                             @if($item->size)

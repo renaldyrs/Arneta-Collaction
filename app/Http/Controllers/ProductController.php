@@ -44,7 +44,7 @@ class ProductController extends Controller
             'stock' => 'required|integer',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',generateProductCode
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'sizes' => 'nullable|array',
             'sizes.*.name' => 'required|string|max:255',
             'sizes.*.stock' => 'required|integer|min:0',

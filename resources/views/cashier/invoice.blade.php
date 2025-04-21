@@ -73,6 +73,7 @@
                 <tfoot>
                     <tr class="font-bold">
                         <td colspan="3" class="text-right pt-2">TOTAL</td>
+                        
                         <td class="text-right pt-2">Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>

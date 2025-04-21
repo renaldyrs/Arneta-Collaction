@@ -18,7 +18,7 @@ class ProductController extends Controller
     {
         $products = Product::with(['category'])
         
-        ->orderBy('price', 'asc')
+        ->orderBy('created_at', 'desc')
         ->paginate(5);
         $categories = Category::all();
         $suppliers = Supplier::all();

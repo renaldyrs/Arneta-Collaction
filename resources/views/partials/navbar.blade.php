@@ -78,7 +78,7 @@
                 <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex items-center">
                         <i class="fas fa-rocket text-xl text-primary-600 dark:text-primary-400 mr-2"></i>
-                        <span class="text-lg font-bold text-gray-800 dark:text-white">{{ $storeProfile->name }}</span>
+                        <span class="text-lg font-bold text-gray-800 dark:text-white">Arneta Collection</span>
                     </div>
                     <button id="close-sidebar"
                         class="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100">

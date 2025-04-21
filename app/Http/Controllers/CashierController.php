@@ -27,7 +27,7 @@ class CashierController extends Controller
     {
         $products = Product::with('sizes')
         ->where('stock', '>', 0)
-        ->orderBy('name', 'asc')
+        ->orderBy('created_at', 'asc')
         ->get();
         $storeProfile = StoreProfile::first();
         $paymentMethods = PaymentMethod::all();

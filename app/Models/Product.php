@@ -37,17 +37,17 @@ class Product extends Model
     // Method untuk generate kode produk
     public static function generateProductCode($categoryId)
     {
-        $category = Category::find($categoryId);
-        if (!$category) {
-            throw new \Exception("Kategori tidak ditemukan.");
-        }
+        $category = Category::findOrFail($categoryId);
+        
 
         // Hitung jumlah produk dalam kategori ini
-        $productCount = Product::where('category_id', $categoryId)->count();
+        $maxCode = Product::where('category_id', $categoryId)
+        ->where('code', 'like', $category->code.'%')
+        ->max('code');
 
         // Format kode produk: KODEKATEGORI-NOMORURUT
-        $sequentialNumber = str_pad($productCount + 1, 3, '0', STR_PAD_LEFT); // Format 001, 002, dst.
-        return $category->code . $sequentialNumber;
+        $lastNumber = $maxCode ? intval(substr($maxCode, strlen($category->code))) : 0;
+    return $category->code . str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
     }
 
 

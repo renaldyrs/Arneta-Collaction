@@ -37,8 +37,10 @@
             
             <!-- Customer Info -->
             <div class="mb-6 p-4 bg-gray-50 rounded">
-                <h2 class="font-bold mb-2">Pembayaran</h2>
-                <p>Metode: {{ $transaction->paymentMethod->name }}</p>
+                <h2 class="font-bold mb-2">{{ $storeProfile->name }}</h2>
+                <p> {{ $storeProfile->address }}</p>
+                <p>Telp: {{ $storeProfile->phone }}</p>
+
             </div>
 
             <!-- Order Items -->
@@ -76,7 +78,7 @@
 
             <div class="text-center text-sm mt-8">
                 <p>Terima kasih telah berbelanja!</p>
-                <p>{{ config('app.name') }}</p>
+                <p>{{ $storeProfile->name }}</p>
             </div>
         </div>
 

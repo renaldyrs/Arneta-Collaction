@@ -7,59 +7,60 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 dark:bg-gray-900">
                 <!-- Daftar Produk (Kolom Kiri) -->
                 <!-- Daftar Produk (Kolom Kiri) -->
-    <div class="lg:col-span-2 p-6  dark:bg-gray-800 dark:border-gray-800">
-        <div>
-            <h2 class="text-xl font-bold mb-4 text-gray-800">Daftar Produk</h2>
-            <!-- Search Bar -->
-            <div class="mb-4 relative">
-                <input type="text" id="productSearch" placeholder="Cari produk..."
-                    class="w-full p-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-            </div>
+                <div class="lg:col-span-2 p-6  dark:bg-gray-800 dark:border-gray-800">
+                    <div>
+                        <h2 class="text-xl font-bold mb-4 text-gray-800">Daftar Produk</h2>
+                        <!-- Search Bar -->
+                        <div class="mb-4 relative">
+                            <input type="text" id="productSearch" placeholder="Cari produk..."
+                                class="w-full p-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
 
-            <!-- Kategori -->
-            <div class="mb-4 flex flex-wrap gap-2">
-                <button
-                    class="category-btn px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 active:bg-blue-300"
-                    data-category="all">Semua</button>
-                @foreach($categories as $category)
-                    <button
-                        class="category-btn px-3 py-1 bg-blue-100 text-gray-800 rounded-full text-sm hover:bg-blue-200 active:bg-blue-300"
-                        data-category="{{ $category->id }}">{{ $category->name }}</button>
-                @endforeach
-            </div>
+                        <!-- Kategori -->
+                        <div class="mb-4 flex flex-wrap gap-2">
+                            <button
+                                class="category-btn px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 active:bg-blue-300"
+                                data-category="all">Semua</button>
+                            @foreach($categories as $category)
+                                <button
+                                    class="category-btn px-3 py-1 bg-blue-100 text-gray-800 rounded-full text-sm hover:bg-blue-200 active:bg-blue-300"
+                                    data-category="{{ $category->id }}">{{ $category->name }}</button>
+                            @endforeach
+                        </div>
 
-            <!-- Daftar Produk dengan Scroll -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 overflow-y-auto max-h-96" id="productGrid">
-                @foreach($products as $product)
-                    <div class="product-card p-3 border rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-                        data-id="{{ $product->id }}" data-name="{{ $product->name }}"
-                        data-price="{{ $product->price }}" data-stock="{{ $product->stock }}"
-                        data-category="{{ $product->category_id }}" data-barcode="{{ $product->barcode }}"
-                        data-sizes="{{ $product->sizes->map(fn($size) => ['name' => $size->name, 'stock' => $size->pivot->stock])->toJson() }}">
-                        <div class="h-32 bg-gray-100 rounded-md mb-2 overflow-hidden">
-                            @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                    class="w-full h-full object-cover">
-                            @else
-                                <div class="w-full h-full flex items-center justify-center text-gray-400">
-                                    <i class="fas fa-image fa-2x"></i>
+                        <!-- Daftar Produk dengan Scroll -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 overflow-y-auto max-h-96"
+                            id="productGrid">
+                            @foreach($products as $product)
+                                <div class="product-card p-3 border rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                                    data-id="{{ $product->id }}" data-name="{{ $product->name }}"
+                                    data-price="{{ $product->price }}" data-stock="{{ $product->stock }}"
+                                    data-category="{{ $product->category_id }}" data-barcode="{{ $product->barcode }}"
+                                    data-sizes="{{ $product->sizes->map(fn($size) => ['name' => $size->name, 'stock' => $size->pivot->stock])->toJson() }}">
+                                    <div class="h-32 bg-gray-100 rounded-md mb-2 overflow-hidden">
+                                        @if($product->image)
+                                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                                                class="w-full h-full object-cover">
+                                        @else
+                                            <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                                <i class="fas fa-image fa-2x"></i>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <span class="font-medium text-gray-800 truncate">{{ $product->name }}</span>
+                                        <span>{{ $product->barcode }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <span class="text-blue-600 font-bold">Rp {{ number_format($product->price) }}</span>
+                                        <span class="text-xs text-gray-500">Stok: {{ $product->stock }}</span>
+                                    </div>
                                 </div>
-                            @endif
-                        </div>
-                        <div class="flex justify-between items-center mt-1">
-                            <span class="font-medium text-gray-800 truncate">{{ $product->name }}</span>
-                            <span>{{ $product->barcode }}</span>
-                        </div>
-                        <div class="flex justify-between items-center mt-1">
-                            <span class="text-blue-600 font-bold">Rp {{ number_format($product->price) }}</span>
-                            <span class="text-xs text-gray-500">Stok: {{ $product->stock }}</span>
+                            @endforeach
                         </div>
                     </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
+                </div>
 
                 <!-- Keranjang Belanja (Kolom Kanan) -->
                 <div class="col-span-1  dark:bg-gray-800 dark:border-gray-800">
@@ -192,52 +193,97 @@
             const scannerElement = document.getElementById('scanner');
 
             // Fungsi untuk update tampilan keranjang
-            function updateCart() {
-                cartItemsEl.innerHTML = '';
+            // Fungsi untuk update tampilan keranjang
+function updateCart() {
+    cartItemsEl.innerHTML = '';
 
-                if (cart.length === 0) {
-                    cartItemsEl.appendChild(emptyCartMessage);
-                    subtotalEl.textContent = 'Rp 0';
-                    totalEl.textContent = 'Rp 0';
-                    discountEl.textContent = 'Rp 0';
-                    checkoutBtn.disabled = true;
-                    return;
-                }
+    if (cart.length === 0) {
+        cartItemsEl.appendChild(emptyCartMessage);
+        subtotalEl.textContent = 'Rp 0';
+        totalEl.textContent = 'Rp 0';
+        discountEl.textContent = 'Rp 0';
+        checkoutBtn.disabled = true;
+        return;
+    }
 
-                let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                let discount = 0;
-                let total = subtotal - discount;
+    let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    let discount = 0;
+    let total = subtotal - discount;
 
-                subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-                discountEl.textContent = 'Rp ' + discount.toLocaleString('id-ID');
-                totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
+    subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+    discountEl.textContent = 'Rp ' + discount.toLocaleString('id-ID');
+    totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
 
-                cart.forEach((item, index) => {
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'flex justify-between items-center py-2 border-b';
-                    itemEl.innerHTML = `
-                    <div class="flex-1">
-                        <div class="font-medium">${item.name} ${item.size ? `(${item.size})` : ''}</div>
-                        <div class="flex items-center mt-1">
-                            <button class="quantity-btn px-2 py-1 bg-gray-200 rounded" data-index="${index}" data-action="decrease">
-                                <i class="fas fa-minus text-xs"></i>
-                            </button>
-                            <span class="mx-2">${item.quantity}</span>
-                            <button class="quantity-btn px-2 py-1 bg-gray-200 rounded" data-index="${index}" data-action="increase">
-                                <i class="fas fa-plus text-xs"></i>
-                            </button>
-                            <span class="ml-4 text-blue-600">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
-                        </div>
-                    </div>
-                    <button class="remove-btn ml-2 text-red-500 hover:text-red-700" data-index="${index}">
-                        <i class="fas fa-trash"></i>
+    cart.forEach((item, index) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'flex justify-between items-center py-2 border-b';
+        itemEl.innerHTML = `
+            <div class="flex-1">
+                <div class="font-medium">${item.name} ${item.size ? `(${item.size})` : ''}</div>
+                <div class="flex items-center mt-1">
+                    <button class="quantity-btn px-2 py-1 bg-gray-200 rounded" data-index="${index}" data-action="decrease">
+                        <i class="fas fa-minus text-xs"></i>
                     </button>
-                `;
-                    cartItemsEl.appendChild(itemEl);
-                });
+                    <input type="number" min="1" max="${item.stock}" 
+                        value="${item.quantity}" 
+                        class="quantity-input w-12 mx-2 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        data-index="${index}">
+                    <button class="quantity-btn px-2 py-1 bg-gray-200 rounded" data-index="${index}" data-action="increase">
+                        <i class="fas fa-plus text-xs"></i>
+                    </button>
+                    <span class="ml-4 text-blue-600">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                </div>
+            </div>
+            <button class="remove-btn ml-2 text-red-500 hover:text-red-700" data-index="${index}">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        cartItemsEl.appendChild(itemEl);
+    });
 
-                checkoutBtn.disabled = cart.length === 0 || !paymentMethodEl.value;
+    // Tambahkan event listener untuk input manual
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const index = parseInt(this.dataset.index);
+            let newQuantity = parseInt(this.value);
+            
+            // Validasi input
+            if (isNaN(newQuantity) || newQuantity < 1) {
+                newQuantity = 1;
+                this.value = 1;
+            } else if (newQuantity > cart[index].stock) {
+                newQuantity = cart[index].stock;
+                this.value = cart[index].stock;
+                showErrorAlert('Stok tidak mencukupi');
             }
+            
+            cart[index].quantity = newQuantity;
+            updateCart();
+        });
+
+        // Validasi saat mengetik
+        input.addEventListener('keydown', function(e) {
+            // Blokir karakter non-angka
+            if (['e', 'E', '+', '-', '.'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        // Pastikan nilai tetap valid saat kehilangan fokus
+        input.addEventListener('blur', function() {
+            if (this.value === '') {
+                this.value = 1;
+                const index = parseInt(this.dataset.index);
+                cart[index].quantity = 1;
+                updateCart();
+            }
+        });
+    });
+
+    checkoutBtn.disabled = cart.length === 0 || !paymentMethodEl.value;
+}
+
+
 
             // Event listener untuk produk
             document.querySelectorAll('.product-card').forEach(card => {
@@ -313,27 +359,35 @@
 
             // Event delegation untuk tombol quantity dan hapus
             cartItemsEl.addEventListener('click', function (e) {
-                if (e.target.closest('.quantity-btn')) {
-                    const btn = e.target.closest('.quantity-btn');
-                    const index = parseInt(btn.dataset.index);
-                    const action = btn.dataset.action;
+    // Tangani tombol +/-
+    if (e.target.closest('.quantity-btn')) {
+        const btn = e.target.closest('.quantity-btn');
+        const index = parseInt(btn.dataset.index);
+        const action = btn.dataset.action;
 
-                    if (action === 'increase' && cart[index].quantity < cart[index].stock) {
-                        cart[index].quantity += 1;
-                    } else if (action === 'decrease' && cart[index].quantity > 1) {
-                        cart[index].quantity -= 1;
-                    }
+        if (action === 'increase') {
+            if (cart[index].quantity < cart[index].stock) {
+                cart[index].quantity += 1;
+            } else {
+                showErrorAlert('Stok tidak mencukupi');
+            }
+        } else if (action === 'decrease') {
+            if (cart[index].quantity > 1) {
+                cart[index].quantity -= 1;
+            }
+        }
 
-                    updateCart();
-                }
+        updateCart();
+    }
 
-                if (e.target.closest('.remove-btn')) {
-                    const btn = e.target.closest('.remove-btn');
-                    const index = parseInt(btn.dataset.index);
-                    cart.splice(index, 1);
-                    updateCart();
-                }
-            });
+    // Tangani tombol hapus
+    if (e.target.closest('.remove-btn')) {
+        const btn = e.target.closest('.remove-btn');
+        const index = parseInt(btn.dataset.index);
+        cart.splice(index, 1);
+        updateCart();
+    }
+});
 
             // Event listener untuk metode pembayaran
             paymentMethodEl.addEventListener('change', function () {
@@ -411,11 +465,11 @@
                 const alert = document.createElement('div');
                 alert.className = 'fixed top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 z-50 rounded shadow-lg';
                 alert.innerHTML = `
-                                                                        <div class="flex items-center">
-                                                                            <i class="fas fa-exclamation-circle mr-2"></i>
-                                                                            <span>${message}</span>
-                                                                        </div>
-                                                                    `;
+                                                                            <div class="flex items-center">
+                                                                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                                                                <span>${message}</span>
+                                                                            </div>
+                                                                        `;
                 document.body.appendChild(alert);
 
                 setTimeout(() => {
@@ -491,111 +545,111 @@
 
             // Fungsi untuk memulai scanner
             // Fungsi untuk memulai scanner
-function startScanner() {
-    Quagga.init({
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: scannerElement, // Elemen untuk menampilkan kamera
-            constraints: {
-                facingMode: "environment" // Gunakan kamera belakang
-            }
-        },
-        decoder: {
-            readers: ["code_128_reader", "ean_reader", "upc_reader"] // Format barcode yang didukung
-        }
-    }, function (err) {
-        if (err) {
-            console.error("QuaggaJS error:", err);
-            return;
-        }
-        Quagga.start();
-    });
-
-    // Event ketika barcode terdeteksi
-    Quagga.onDetected(function (data) {
-        const barcode = data.codeResult.code;
-        console.log("Barcode detected:", barcode);
-
-        // Cari produk berdasarkan barcode
-        const productCard = Array.from(document.querySelectorAll('.product-card')).find(card => card.dataset.barcode === barcode);
-
-        if (productCard) {
-            const id = productCard.dataset.id;
-            const name = productCard.dataset.name;
-            const price = parseFloat(productCard.dataset.price);
-            const stock = parseInt(productCard.dataset.stock);
-            const sizes = JSON.parse(productCard.dataset.sizes); // Data ukuran produk
-
-            // Jika produk memiliki ukuran
-            if (sizes.length > 0) {
-                let sizeOptions = sizes.map(size => `${size.name} (Stok: ${size.stock})`).join('\n');
-                let selectedSize = prompt(`Pilih ukuran untuk produk "${name}":\n${sizeOptions}`);
-
-                // Cari ukuran yang dipilih
-                const size = sizes.find(s => s.name.toLowerCase() === selectedSize?.toLowerCase());
-
-                if (!size) {
-                    alert('Ukuran tidak valid atau stok tidak mencukupi.');
-                    return;
-                }
-
-                // Periksa stok ukuran
-                if (size.stock <= 0) {
-                    alert('Stok untuk ukuran ini tidak mencukupi.');
-                    return;
-                }
-
-                // Tambahkan produk dengan ukuran ke keranjang
-                const existingItem = cart.find(item => item.id === id && item.size === size.name);
-
-                if (existingItem) {
-                    if (existingItem.quantity < size.stock) {
-                        existingItem.quantity += 1;
-                    } else {
-                        alert('Stok tidak mencukupi.');
+            function startScanner() {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: scannerElement, // Elemen untuk menampilkan kamera
+                        constraints: {
+                            facingMode: "environment" // Gunakan kamera belakang
+                        }
+                    },
+                    decoder: {
+                        readers: ["code_128_reader", "ean_reader", "upc_reader"] // Format barcode yang didukung
                     }
-                } else {
-                    cart.push({
-                        id,
-                        name,
-                        price,
-                        size: size.name,
-                        quantity: 1,
-                        stock: size.stock
-                    });
-                }
-            } else {
-                // Jika produk tidak memiliki ukuran
-                const existingItem = cart.find(item => item.id === id);
-
-                if (existingItem) {
-                    if (existingItem.quantity < stock) {
-                        existingItem.quantity += 1;
-                    } else {
-                        alert('Stok tidak mencukupi.');
+                }, function (err) {
+                    if (err) {
+                        console.error("QuaggaJS error:", err);
+                        return;
                     }
-                } else {
-                    cart.push({
-                        id,
-                        name,
-                        price,
-                        quantity: 1,
-                        stock
-                    });
-                }
+                    Quagga.start();
+                });
+
+                // Event ketika barcode terdeteksi
+                Quagga.onDetected(function (data) {
+                    const barcode = data.codeResult.code;
+                    console.log("Barcode detected:", barcode);
+
+                    // Cari produk berdasarkan barcode
+                    const productCard = Array.from(document.querySelectorAll('.product-card')).find(card => card.dataset.barcode === barcode);
+
+                    if (productCard) {
+                        const id = productCard.dataset.id;
+                        const name = productCard.dataset.name;
+                        const price = parseFloat(productCard.dataset.price);
+                        const stock = parseInt(productCard.dataset.stock);
+                        const sizes = JSON.parse(productCard.dataset.sizes); // Data ukuran produk
+
+                        // Jika produk memiliki ukuran
+                        if (sizes.length > 0) {
+                            let sizeOptions = sizes.map(size => `${size.name} (Stok: ${size.stock})`).join('\n');
+                            let selectedSize = prompt(`Pilih ukuran untuk produk "${name}":\n${sizeOptions}`);
+
+                            // Cari ukuran yang dipilih
+                            const size = sizes.find(s => s.name.toLowerCase() === selectedSize?.toLowerCase());
+
+                            if (!size) {
+                                alert('Ukuran tidak valid atau stok tidak mencukupi.');
+                                return;
+                            }
+
+                            // Periksa stok ukuran
+                            if (size.stock <= 0) {
+                                alert('Stok untuk ukuran ini tidak mencukupi.');
+                                return;
+                            }
+
+                            // Tambahkan produk dengan ukuran ke keranjang
+                            const existingItem = cart.find(item => item.id === id && item.size === size.name);
+
+                            if (existingItem) {
+                                if (existingItem.quantity < size.stock) {
+                                    existingItem.quantity += 1;
+                                } else {
+                                    alert('Stok tidak mencukupi.');
+                                }
+                            } else {
+                                cart.push({
+                                    id,
+                                    name,
+                                    price,
+                                    size: size.name,
+                                    quantity: 1,
+                                    stock: size.stock
+                                });
+                            }
+                        } else {
+                            // Jika produk tidak memiliki ukuran
+                            const existingItem = cart.find(item => item.id === id);
+
+                            if (existingItem) {
+                                if (existingItem.quantity < stock) {
+                                    existingItem.quantity += 1;
+                                } else {
+                                    alert('Stok tidak mencukupi.');
+                                }
+                            } else {
+                                cart.push({
+                                    id,
+                                    name,
+                                    price,
+                                    quantity: 1,
+                                    stock
+                                });
+                            }
+                        }
+
+                        updateCart();
+                        alert(`Produk "${name}" berhasil ditambahkan ke keranjang.`);
+                    } else {
+                        alert('Produk dengan barcode ini tidak ditemukan');
+                    }
+
+                    // Hentikan scanner setelah barcode ditemukan
+                    stopScanner();
+                });
             }
-
-            updateCart();
-            alert(`Produk "${name}" berhasil ditambahkan ke keranjang.`);
-        } else {
-            alert('Produk dengan barcode ini tidak ditemukan');
-        }
-
-        // Hentikan scanner setelah barcode ditemukan
-        stopScanner();
-    });
-}
 
             // Fungsi untuk menghentikan scanner
             function stopScanner() {

@@ -10,15 +10,40 @@
 
             <!-- Logo Toko -->
             <div class="flex flex-col items-center mb-6">
-    @php
-        $logoUrl = $profile->logo ? Storage::disk('s3')->url($profile->logo) : asset('images/default-logo.png');
-    @endphp
-    
-    <img src="{{ $logoUrl }}" 
-         alt="Logo Toko"
-         class="mt-4 w-32 h-32 object-cover rounded-md shadow-md"
-         onerror="this.onerror=null;this.src='{{ asset('images/default-logo.png') }}'">
-</div>
+                @php
+                    $defaultLogo = asset('images/default-logo.png');
+                    $logoUrl = $defaultLogo;
+                    
+                    if (!empty($profile->logo)) {
+                        try {
+                            // Jika logo sudah berupa URL lengkap
+                            if (filter_var($profile->logo, FILTER_VALIDATE_URL)) {
+                                $logoUrl = $profile->logo;
+                            } 
+                            // Jika logo berupa path di storage
+                            else {
+                                // Cek apakah file ada di LaravelCloud
+                                if (Storage::disk('laravelcloud')->exists($profile->logo)) {
+                                    $logoUrl = Storage::disk('laravelcloud')->url($profile->logo);
+                                }
+                                // Fallback ke URL langsung jika ada masalah dengan Storage URL
+                                else {
+                                    $logoUrl = env('LARAVELCLOUD_ENDPOINT').'/'.$profile->logo;
+                                }
+                            }
+                        } catch (\Exception $e) {
+                            \Log::error('Logo Error: '.$e->getMessage());
+                            $logoUrl = $defaultLogo;
+                        }
+                    }
+                @endphp
+
+                <img src="{{ $logoUrl }}" 
+                     alt="Logo Toko" 
+                     class="mt-4 w-32 h-32 object-cover rounded-md shadow-md"
+                     onerror="this.onerror=null;this.src='{{ $defaultLogo }}'"
+                     id="store-logo">
+            </div>
 
             <!-- Nama Toko -->
             <div class="mb-6">
@@ -48,3 +73,15 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fallback client-side jika gambar gagal dimuat
+    const logo = document.getElementById('store-logo');
+    logo.addEventListener('error', function() {
+        this.src = '{{ asset("images/default-logo.png") }}';
+    });
+});
+</script>
+@endpush

@@ -44,21 +44,21 @@ return [
             'throw' => false,
         ],
 
-        's3' => [
-            'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
-            'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
-            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'visibility' => 'public',
-            'options' => [
-                'ACL' => 'public-read',
-        'CacheControl' => 'max-age=31536000',
-            ],
-        ],
+        'laravelcloud' => [
+    'driver' => 's3',
+    'key' => env('LARAVELCLOUD_ACCESS_KEY_ID'),
+    'secret' => env('LARAVELCLOUD_SECRET_ACCESS_KEY'),
+    'region' => env('LARAVELCLOUD_DEFAULT_REGION'),
+    'bucket' => env('LARAVELCLOUD_BUCKET'),
+    'url' => env('LARAVELCLOUD_URL'),
+    'endpoint' => env('LARAVELCLOUD_ENDPOINT'),
+    'use_path_style_endpoint' => true,
+    'visibility' => 'public',
+    'options' => [
+        'CacheControl' => 'max-age=31536000, public',
+        'ACL' => 'public-read'
+    ],
+],
 
     ],
 

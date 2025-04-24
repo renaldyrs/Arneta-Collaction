@@ -27,7 +27,6 @@ class StoreProfileController extends Controller
     {
         $profile = StoreProfile::first();
         return view('store-profile.edit', compact('profile'));
-
     }
 
     public function store(Request $request)
@@ -50,17 +49,18 @@ class StoreProfileController extends Controller
         $profile->phone = $request->phone;
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('store-profile', 's3');
-            logger()->info('File uploaded to:', ['path' => $path]);
-            logger()->info('Full URL:', ['url' => Storage::disk('s3')->url($path)]);
-
-            // Pastikan file ada
-            $exists = Storage::disk('s3')->exists($path);
-            logger()->info('File exists:', ['exists' => $exists]);
-
-            $profile->logo = $path; // Simpan path lengkap
+            // Upload ke LaravelCloud
+            $path = $request->file('logo')->store('store-profile', 'laravelcloud');
+            
+            // Verifikasi upload
+            if (!Storage::disk('laravelcloud')->exists($path)) {
+                throw new \Exception("Gagal mengupload gambar ke LaravelCloud");
+            }
+            
+            // Simpan URL lengkap ke database
+            $profile->logo = Storage::disk('laravelcloud')->url($path);
         } else {
-            $profile->logo = Storage::disk('s3')->url('default-logo.png');
+            $profile->logo = Storage::disk('laravelcloud')->url('default-logo.png');
         }
 
         $profile->save();
@@ -80,19 +80,20 @@ class StoreProfileController extends Controller
 
         if ($request->hasFile('logo')) {
             // Hapus logo lama jika ada
-            if ($profile->logo) {
-                $oldLogoPath = parse_url($profile->logo, PHP_URL_PATH);
-                $oldLogoPath = ltrim($oldLogoPath, '/');
-                Storage::disk('s3')->delete($oldLogoPath);
+            if ($profile->logo && $this->checkUrl($profile->logo)) {
+                $oldPath = parse_url($profile->logo, PHP_URL_PATH);
+                $oldPath = ltrim($oldPath, '/');
+                Storage::disk('laravelcloud')->delete($oldPath);
             }
 
             // Simpan logo baru
             $path = $request->file('logo')->store(
                 'store-profile',
-                's3',
+                'laravelcloud',
                 ['visibility' => 'public']
             );
-            $profile->logo = Storage::disk('s3')->url($path);
+            
+            $profile->logo = Storage::disk('laravelcloud')->url($path);
         }
 
         $profile->update([
@@ -102,5 +103,16 @@ class StoreProfileController extends Controller
         ]);
 
         return redirect()->route('store-profile.index')->with('success', 'Profile toko berhasil diperbarui.');
+    }
+
+    protected function checkUrl($url)
+    {
+        try {
+            $client = new \GuzzleHttp\Client();
+            $response = $client->head($url, ['timeout' => 3]);
+            return $response->getStatusCode() == 200;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

@@ -105,3 +105,11 @@ Route::resource('users', UserController::class);
 
 Route::resource('payment', PaymentMethodController::class)->middleware('auth');
 
+Route::get('/test-aws-config', function() {
+    return [
+        'region' => config('filesystems.disks.s3.region'),
+        'bucket' => config('filesystems.disks.s3.bucket'),
+        'key' => config('filesystems.disks.s3.key') ? '*****' : 'Not set',
+        'endpoint' => config('filesystems.disks.s3.endpoint'),
+    ];
+});

@@ -48,7 +48,7 @@ return [
     'driver' => 's3',
     'key' => env('LARAVELCLOUD_ACCESS_KEY_ID'),
     'secret' => env('LARAVELCLOUD_SECRET_ACCESS_KEY'),
-    'region' => env('LARAVELCLOUD_DEFAULT_REGION'),
+    'region' => 'ap-southeast-1',
     'bucket' => env('LARAVELCLOUD_BUCKET'),
     'url' => env('LARAVELCLOUD_URL'),
     'endpoint' => env('LARAVELCLOUD_ENDPOINT'),

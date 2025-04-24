@@ -24,6 +24,7 @@ class StoreProfileController extends Controller
     {
         $profile = StoreProfile::first();
         return view('store-profile.edit', compact('profile'));
+        
     }
 
     public function store(Request $request)

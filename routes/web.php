@@ -77,7 +77,7 @@ Route::prefix('store-profile')->group(function () {
     Route::get('/edit', [StoreProfileController::class, 'edit'])->name('store-profile.edit');
     Route::post('/store', [StoreProfileController::class, 'store'])->name('store-profile.store');
     Route::get('/create', [StoreProfileController::class, 'create'])->name('store-profile.create');
-    Route::patch('/update', [StoreProfileController::class, 'update'])->name('store-profile.update');
+    Route::put('/update', [StoreProfileController::class, 'update'])->name('store-profile.update');
 });
 
 // Expenses
@@ -105,11 +105,3 @@ Route::resource('users', UserController::class);
 
 Route::resource('payment', PaymentMethodController::class)->middleware('auth');
 
-Route::get('/test-aws-config', function() {
-    return [
-        'region' => config('filesystems.disks.s3.region'),
-        'bucket' => config('filesystems.disks.s3.bucket'),
-        'key' => config('filesystems.disks.s3.key') ? '*****' : 'Not set',
-        'endpoint' => config('filesystems.disks.s3.endpoint'),
-    ];
-});

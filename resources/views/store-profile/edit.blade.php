@@ -95,25 +95,3 @@
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Preview gambar sebelum upload
-    const logoInput = document.getElementById('logo');
-    const currentLogo = document.getElementById('current-logo');
-    
-    logoInput.addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            
-            reader.onload = function(event) {
-                currentLogo.src = event.target.result;
-            }
-            
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    });
-});
-</script>
-@endpush

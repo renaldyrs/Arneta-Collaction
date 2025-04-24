@@ -51,12 +51,12 @@ class StoreProfileController extends Controller
         if ($request->hasFile('logo')) {
             // Upload ke LaravelCloud
             $path = $request->file('logo')->store('store-profile', 'laravelcloud');
-            
+
             // Verifikasi upload
             if (!Storage::disk('laravelcloud')->exists($path)) {
                 throw new \Exception("Gagal mengupload gambar ke LaravelCloud");
             }
-            
+
             // Simpan URL lengkap ke database
             $profile->logo = Storage::disk('laravelcloud')->url($path);
         } else {
@@ -76,14 +76,13 @@ class StoreProfileController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $profile = StoreProfile::first();
+        $profile = StoreProfile::firstOrFail();
 
+        // Update logo jika ada file baru
         if ($request->hasFile('logo')) {
             // Hapus logo lama jika ada
-            if ($profile->logo && $this->checkUrl($profile->logo)) {
-                $oldPath = parse_url($profile->logo, PHP_URL_PATH);
-                $oldPath = ltrim($oldPath, '/');
-                Storage::disk('laravelcloud')->delete($oldPath);
+            if ($profile->logo) {
+                Storage::disk('laravelcloud')->delete($profile->logo);
             }
 
             // Simpan logo baru
@@ -92,17 +91,19 @@ class StoreProfileController extends Controller
                 'laravelcloud',
                 ['visibility' => 'public']
             );
-            
-            $profile->logo = Storage::disk('laravelcloud')->url($path);
+
+            $profile->logo = $path;
         }
 
+        // Update data lainnya
         $profile->update([
             'name' => $request->name,
             'address' => $request->address,
             'phone' => $request->phone,
         ]);
 
-        return redirect()->route('store-profile.index')->with('success', 'Profile toko berhasil diperbarui.');
+        return redirect()->route('store-profile.index')
+            ->with('success', 'Profile toko berhasil diperbarui.');
     }
 
     protected function checkUrl($url)

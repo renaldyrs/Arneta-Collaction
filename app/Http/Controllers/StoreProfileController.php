@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 use App\Models\StoreProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Aws\S3\S3Client;
 
 class StoreProfileController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $storeProfile = StoreProfile::first();
         if (!$storeProfile) {
             return redirect()->route('store-profile.create')->with('error', 'Profile toko belum ada. Silakan buat profile toko terlebih dahulu.');
@@ -16,7 +18,8 @@ class StoreProfileController extends Controller
         return view('store-profile.index', compact('profile'));
     }
 
-    public function create(){
+    public function create()
+    {
         return view('store-profile.create');
     }
 
@@ -24,7 +27,7 @@ class StoreProfileController extends Controller
     {
         $profile = StoreProfile::first();
         return view('store-profile.edit', compact('profile'));
-        
+
     }
 
     public function store(Request $request)
@@ -47,11 +50,15 @@ class StoreProfileController extends Controller
         $profile->phone = $request->phone;
 
         if ($request->hasFile('logo')) {
-            // Simpan file ke bucket Laravel Cloud
-            $logoPath = $request->file('logo')->store('store-profile', 's3');
-            
-            // Dapatkan URL publik dari file yang disimpan
-            $profile->logo = Storage::disk('s3')->url($logoPath);
+            $path = $request->file('logo')->store('store-profile', 's3');
+            logger()->info('File uploaded to:', ['path' => $path]);
+            logger()->info('Full URL:', ['url' => Storage::disk('s3')->url($path)]);
+
+            // Pastikan file ada
+            $exists = Storage::disk('s3')->exists($path);
+            logger()->info('File exists:', ['exists' => $exists]);
+
+            $profile->logo = $path; // Simpan path lengkap
         } else {
             $profile->logo = Storage::disk('s3')->url('default-logo.png');
         }
@@ -78,10 +85,14 @@ class StoreProfileController extends Controller
                 $oldLogoPath = ltrim($oldLogoPath, '/');
                 Storage::disk('s3')->delete($oldLogoPath);
             }
-            
+
             // Simpan logo baru
-            $logoPath = $request->file('logo')->store('store-profile', 's3');
-            $profile->logo = Storage::disk('s3')->url($logoPath);
+            $path = $request->file('logo')->store(
+                'store-profile',
+                's3',
+                ['visibility' => 'public']
+            );
+            $profile->logo = Storage::disk('s3')->url($path);
         }
 
         $profile->update([

@@ -19,6 +19,7 @@ use App\Http\Controllers\{
     PaymentMethodController
 };
 
+
 Route::get('/', function () {
     return view('auth.login');
 });
@@ -103,3 +104,4 @@ Route::middleware('auth')->prefix('profile')->group(function () {
 Route::resource('users', UserController::class);
 
 Route::resource('payment', PaymentMethodController::class)->middleware('auth');
+

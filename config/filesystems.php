@@ -46,21 +46,15 @@ return [
 
         'laravelcloud' => [
             'driver' => 's3',
-            'key' => env('LARAVELCLOUD_KEY'),
-            'secret' => env('LARAVELCLOUD_SECRET'),
-            'region' => env('LARAVELCLOUD_REGION'),
-            'bucket' => env('LARAVELCLOUD_BUCKET'),
-            'url' => env('AWS_URL'), // Untuk CDN
-            'endpoint' => env('LARAVELCLOUD_ENDPOINT'),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => false,
-            'cache' => [
-                'store' => 'redis', // Cache driver
-                'expire' => 600,    // 10 menit
-                'prefix' => 's3-laravelcloud'
-            ],
             'visibility' => 'public',
         ],
-
     ],
 
     /*

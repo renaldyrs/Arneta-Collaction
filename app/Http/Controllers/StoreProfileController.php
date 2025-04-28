@@ -4,28 +4,39 @@ namespace App\Http\Controllers;
 use App\Models\StoreProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Aws\S3\S3Client;
+use Illuminate\Support\Facades\Log;
 
 class StoreProfileController extends Controller
 {
+    // Disk yang digunakan untuk penyimpanan
+    protected $disk = 'laravelcloud';
+
     public function index()
     {
-        $storeProfile = StoreProfile::first();
-        if (!$storeProfile) {
-            return redirect()->route('store-profile.create')->with('error', 'Profile toko belum ada. Silakan buat profile toko terlebih dahulu.');
-        }
         $profile = StoreProfile::first();
+        
+        
+        if (!$profile) {
+            return redirect()->route('store-profile.create')
+                ->with('error', 'Profile toko belum ada. Silakan buat profile toko terlebih dahulu.');
+        }
+
         return view('store-profile.index', compact('profile'));
     }
 
     public function create()
     {
+        if (StoreProfile::exists()) {
+            return redirect()->route('store-profile.edit')
+                ->with('info', 'Profile toko sudah ada. Anda dapat mengeditnya di sini.');
+        }
+
         return view('store-profile.create');
     }
 
     public function edit()
     {
-        $profile = StoreProfile::first();
+        $profile = StoreProfile::firstOrFail();
         return view('store-profile.edit', compact('profile'));
     }
 
@@ -35,36 +46,35 @@ class StoreProfileController extends Controller
             'name' => 'required|string|max:255',
             'address' => 'required|string',
             'phone' => 'required|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $profile = StoreProfile::first();
-        if ($profile) {
-            return redirect()->route('store-profile.edit')->with('error', 'Profile toko sudah ada.');
+        if (StoreProfile::exists()) {
+            return redirect()->route('store-profile.edit')
+                ->with('error', 'Profile toko sudah ada. Silakan edit profile yang sudah ada.');
         }
 
-        $profile = new StoreProfile();
-        $profile->name = $request->name;
-        $profile->address = $request->address;
-        $profile->phone = $request->phone;
+        try {
+            $profile = new StoreProfile();
+            $profile->name = $request->name;
+            $profile->address = $request->address;
+            $profile->phone = $request->phone;
 
-        if ($request->hasFile('logo')) {
-            // Upload ke LaravelCloud
-            $path = $request->file('logo')->store('store-profile', 'laravelcloud');
-
-            // Verifikasi upload
-            if (!Storage::disk('laravelcloud')->exists($path)) {
-                throw new \Exception("Gagal mengupload gambar ke LaravelCloud");
+            if ($request->hasFile('logo')) {
+                $path = $this->uploadLogo($request->file('logo'));
+                $profile->logo = $path;
             }
 
-            // Simpan URL lengkap ke database
-            $profile->logo = Storage::disk('laravelcloud')->url($path);
-        } else {
-            $profile->logo = Storage::disk('laravelcloud')->url('default-logo.png');
-        }
+            $profile->save();
 
-        $profile->save();
-        return redirect()->route('store-profile.index')->with('success', 'Profile toko berhasil dibuat.');
+            return redirect()->route('store-profile.index')
+                ->with('success', 'Profile toko berhasil dibuat.');
+                
+        } catch (\Exception $e) {
+            Log::error('Store profile creation error: ' . $e->getMessage());
+            return back()->withInput()
+                ->with('error', 'Gagal membuat profile toko. Silakan coba lagi.');
+        }
     }
 
     public function update(Request $request)
@@ -73,47 +83,105 @@ class StoreProfileController extends Controller
             'name' => 'required|string|max:255',
             'address' => 'required|string',
             'phone' => 'required|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $profile = StoreProfile::firstOrFail();
+        try {
+            $profile = StoreProfile::firstOrFail();
+            $oldLogoPath = $profile->logo;
 
-        // Update logo jika ada file baru
-        if ($request->hasFile('logo')) {
-            // Hapus logo lama jika ada
-            if ($profile->logo) {
-                Storage::disk('laravelcloud')->delete($profile->logo);
+            $profile->name = $request->name;
+            $profile->address = $request->address;
+            $profile->phone = $request->phone;
+
+            if ($request->hasFile('logo')) {
+                $newLogoPath = $this->uploadLogo($request->file('logo'));
+                if ($newLogoPath) {
+                    $profile->logo = $newLogoPath;
+                    $this->deleteOldLogo($oldLogoPath);
+                }
             }
 
-            // Simpan logo baru
-            $path = $request->file('logo')->store(
-                'store-profile',
-                'laravelcloud',
-                ['visibility' => 'public']
-            );
+            $profile->save();
 
-            $profile->logo = $path;
+            return redirect()->route('store-profile.index')
+                ->with('success', 'Profile toko berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            Log::error('Store profile update error: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui profile toko: ' . $e->getMessage());
         }
-
-        // Update data lainnya
-        $profile->update([
-            'name' => $request->name,
-            'address' => $request->address,
-            'phone' => $request->phone,
-        ]);
-
-        return redirect()->route('store-profile.index')
-            ->with('success', 'Profile toko berhasil diperbarui.');
     }
 
-    protected function checkUrl($url)
+    /**
+     * Upload logo ke cloud storage
+     */
+    private function uploadLogo($file)
     {
         try {
-            $client = new \GuzzleHttp\Client();
-            $response = $client->head($url, ['timeout' => 3]);
-            return $response->getStatusCode() == 200;
+            // Generate nama file unik dengan timestamp
+            $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Path penyimpanan
+            $path = 'store-profile/' . date('Y/m') . '/' . $filename;
+            
+            // Upload ke storage
+            Storage::disk($this->disk)->put($path, file_get_contents($file));
+            
+            // Set visibility file (jika diperlukan)
+            Storage::disk($this->disk)->setVisibility($path, 'public');
+            
+            // Return full URL
+            return Storage::disk($this->disk)->url($path);
+            
         } catch (\Exception $e) {
+            Log::error('Logo upload failed: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Hapus logo lama dari storage
+     */
+    private function deleteOldLogo($logoUrl)
+    {
+        if (empty($logoUrl)) {
+            return false;
+        }
+
+        try {
+            $path = $this->extractPathFromUrl($logoUrl);
+            
+            if ($path && Storage::disk($this->disk)->exists($path)) {
+                return Storage::disk($this->disk)->delete($path);
+            }
+            
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Failed to delete old logo: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ekstrak path dari URL
+     */
+    private function extractPathFromUrl($url)
+    {
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            $baseUrl = Storage::disk($this->disk)->url('');
+            $parsedUrl = parse_url($url);
+            $parsedBase = parse_url($baseUrl);
+            
+            // Bandingkan host dan path awal
+            if ($parsedUrl['host'] === $parsedBase['host'] && 
+                strpos($parsedUrl['path'], $parsedBase['path']) === 0) {
+                return ltrim(substr($parsedUrl['path'], strlen($parsedBase['path'])), '/');
+            }
+        }
+        
+        return $url;
     }
 }

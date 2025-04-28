@@ -10,18 +10,39 @@
 
             <!-- Logo Toko -->
             <div class="flex flex-col items-center mb-6">
-                @php
-                    $defaultLogo = asset('images/default-logo.png');
-                    $logoUrl = $defaultLogo;
-
-                    if (!empty($profile->logo)) {
-                        $logoUrl = $profile->logo; // Langsung gunakan value dari database
+    @php
+        $defaultLogo = asset('images/default-logo.png');
+        $logoUrl = $defaultLogo;
+        
+        if (!empty($profile->logo)) {
+            try {
+                // Cek apakah ini URL lengkap
+                if (filter_var($profile->logo, FILTER_VALIDATE_URL)) {
+                    $logoUrl = $profile->logo;
+                } else {
+                    // Coba dapatkan URL dari storage
+                    if (Storage::disk('laravelcloud')->exists($profile->logo)) {
+                        $logoUrl = Storage::disk('laravelcloud')->url($profile->logo);
+                    } else {
+                        // Coba konstruksi URL manual
+                        $baseUrl = config('filesystems.disks.laravelcloud.url', 
+                                    'https://'.config('filesystems.disks.laravelcloud.bucket').'.s3.'.
+                                    config('filesystems.disks.laravelcloud.region').'.amazonaws.com');
+                        $logoUrl = $baseUrl.'/'.ltrim($profile->logo, '/');
                     }
-                @endphp
+                }
+            } catch (\Exception $e) {
+                \Log::error('Logo URL error: '.$e->getMessage());
+            }
+        }
+    @endphp
 
-                <img src="{{ $logoUrl }}" alt="Logo Toko" class="mt-4 w-32 h-32 object-cover rounded-md shadow-md"
-                    onerror="this.onerror=null;this.src='{{ $defaultLogo }}'" id="store-logo">
-            </div>
+    <img src="{{ $logoUrl }}" 
+         alt="Logo Toko" 
+         class="mt-4 w-32 h-32 object-cover rounded-md shadow-md"
+         onerror="this.onerror=null;this.src='{{ $defaultLogo }}'"
+         id="store-logo">
+</div>
 
             <!-- Informasi Toko -->
             <div class="mb-6">

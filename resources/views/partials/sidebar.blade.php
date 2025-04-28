@@ -131,10 +131,14 @@
                                 class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
                                 <i class="fas fa-cog mr-2"></i> Pengaturan
                             </a>
-                            <a href="#"
-                                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center">
+                            
+                            <form method="POST" action="{{ route('logout') }}" >
+                                    @csrf
+                                    <button 
+                                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center button" type="submit">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Keluar
-                            </a>
+                                    </button>
+                                </form>
                         </nav>
                     </div>
                 </div>

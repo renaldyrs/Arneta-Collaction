@@ -16,10 +16,9 @@ class StoreProfileController extends Controller
         $profile = StoreProfile::first();
         
         
-        if ($profile && $profile->logo) {
-            \Log::info('Logo path from DB: ' . $profile->logo);
-            \Log::info('Storage URL: ' . Storage::disk('laravelcloud')->url($profile->logo));
-            \Log::info('File exists: ' . (Storage::disk('laravelcloud')->exists($profile->logo) ? 'Yes' : 'No'));
+        if (!$profile) {
+            return redirect()->route('store-profile.create')
+                ->with('error', 'Profile toko belum ada. Silakan buat profile toko terlebih dahulu.');
         }
 
         return view('store-profile.index', compact('profile'));

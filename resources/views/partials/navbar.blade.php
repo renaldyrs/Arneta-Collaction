@@ -53,15 +53,7 @@
                                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                                 alt="Profil">
                             <span class="ml-2 text-gray-700 dark:text-gray-300 font-medium hidden md:inline">{{ Auth::user()->name ?? 'User' }}</span>
-                            <i
-                                class="fas fa-chevron-down ml-1 text-gray-500 dark:text-gray-400 text-xs hidden md:inline"></i>
-                                <form method="POST" action="{{ route('logout') }}" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 hidden">
-                                    @csrf
-                                    <button type="submit"
-                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        Keluar
-                                    </button>
-                                </form>
+                            
                         </button>
                     </div>
                 </div>

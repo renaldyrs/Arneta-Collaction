@@ -5,25 +5,46 @@ use App\Models\StoreProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class StoreProfileController extends Controller
 {
     // Disk yang digunakan untuk penyimpanan
     protected $disk = 'laravelcloud';
 
+    // Direktori untuk menyimpan logo
+    protected $logoDirectory = 'store-profile/logos';
+
+    // Maksimal ukuran file logo (dalam KB)
+    protected $maxLogoSize = 2048;
+
+    /**
+     * Menampilkan profil toko
+     */
     public function index()
     {
-        $profile = StoreProfile::first();
-        
-        
-        if (!$profile) {
-            return redirect()->route('store-profile.create')
-                ->with('error', 'Profile toko belum ada. Silakan buat profile toko terlebih dahulu.');
-        }
+        try {
+            $profile = StoreProfile::first();
+            
+            if (!$profile) {
+                return redirect()->route('store-profile.create')
+                    ->with('error', 'Profile toko belum ada. Silakan buat profile toko terlebih dahulu.');
+            }
 
-        return view('store-profile.index', compact('profile'));
+            return view('store-profile.index', [
+                'profile' => $profile,
+                'logoUrl' => $this->getVerifiedLogoUrl($profile->logo)
+            ]);
+                
+        } catch (\Exception $e) {
+            Log::error('StoreProfile index error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memuat profil toko.');
+        }
     }
 
+    /**
+     * Form create profil toko
+     */
     public function create()
     {
         if (StoreProfile::exists()) {
@@ -34,19 +55,41 @@ class StoreProfileController extends Controller
         return view('store-profile.create');
     }
 
+    /**
+     * Form edit profil toko
+     */
     public function edit()
     {
-        $profile = StoreProfile::firstOrFail();
-        return view('store-profile.edit', compact('profile'));
+        try {
+            $profile = StoreProfile::firstOrFail();
+            return view('store-profile.edit', [
+                'profile' => $profile,
+                'logoUrl' => $this->getVerifiedLogoUrl($profile->logo)
+            ]);
+                
+        } catch (\Exception $e) {
+            Log::error('StoreProfile edit error: ' . $e->getMessage());
+            return redirect()->route('store-profile.index')
+                ->with('error', 'Profil toko tidak ditemukan.');
+        }
     }
 
+    /**
+     * Menyimpan profil toko baru
+     */
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'phone' => 'required|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'address' => 'required|string|max:500',
+            'phone' => 'required|string|max:20',
+            'logo' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif,svg',
+                'max:'.$this->maxLogoSize,
+                'dimensions:max_width=1000,max_height=1000'
+            ],
         ]);
 
         if (StoreProfile::exists()) {
@@ -61,8 +104,10 @@ class StoreProfileController extends Controller
             $profile->phone = $request->phone;
 
             if ($request->hasFile('logo')) {
-                $path = $this->uploadLogo($request->file('logo'));
-                $profile->logo = $path;
+                $logoPath = $this->uploadLogo($request->file('logo'));
+                if ($logoPath) {
+                    $profile->logo = $logoPath;
+                }
             }
 
             $profile->save();
@@ -77,13 +122,22 @@ class StoreProfileController extends Controller
         }
     }
 
+    /**
+     * Memperbarui profil toko
+     */
     public function update(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'phone' => 'required|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'address' => 'required|string|max:500',
+            'phone' => 'required|string|max:20',
+            'logo' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif,svg',
+                'max:'.$this->maxLogoSize,
+                'dimensions:max_width=1000,max_height=1000'
+            ],
         ]);
 
         try {
@@ -121,17 +175,22 @@ class StoreProfileController extends Controller
     private function uploadLogo($file)
     {
         try {
-            // Generate nama file unik dengan timestamp
-            $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+            // Generate nama file unik
+            $filename = Str::uuid()->toString().'.'.$file->getClientOriginalExtension();
             
             // Path penyimpanan
-            $path = 'store-profile/' . date('Y/m') . '/' . $filename;
+            $path = $this->logoDirectory.'/'.date('Y/m').'/'.$filename;
             
-            // Upload ke storage
-            Storage::disk($this->disk)->put($path, file_get_contents($file));
+            // Upload ke storage menggunakan stream
+            Storage::disk($this->disk)->put($path, fopen($file->getRealPath(), 'r+'));
             
-            // Set visibility file (jika diperlukan)
+            // Set visibility file
             Storage::disk($this->disk)->setVisibility($path, 'public');
+            
+            // Verifikasi upload berhasil
+            if (!Storage::disk($this->disk)->exists($path)) {
+                throw new \Exception('File upload verification failed');
+            }
             
             // Return full URL
             return Storage::disk($this->disk)->url($path);
@@ -155,6 +214,11 @@ class StoreProfileController extends Controller
             $path = $this->extractPathFromUrl($logoUrl);
             
             if ($path && Storage::disk($this->disk)->exists($path)) {
+                // Jangan hapus jika ini adalah logo default
+                if (Str::contains($path, 'default-logo')) {
+                    return false;
+                }
+                
                 return Storage::disk($this->disk)->delete($path);
             }
             
@@ -171,17 +235,45 @@ class StoreProfileController extends Controller
     private function extractPathFromUrl($url)
     {
         if (filter_var($url, FILTER_VALIDATE_URL)) {
-            $baseUrl = Storage::disk($this->disk)->url('');
-            $parsedUrl = parse_url($url);
-            $parsedBase = parse_url($baseUrl);
+            $baseUrl = rtrim(Storage::disk($this->disk)->url(''), '/');
+            $url = rtrim($url, '/');
             
-            // Bandingkan host dan path awal
-            if ($parsedUrl['host'] === $parsedBase['host'] && 
-                strpos($parsedUrl['path'], $parsedBase['path']) === 0) {
-                return ltrim(substr($parsedUrl['path'], strlen($parsedBase['path'])), '/');
+            if (Str::startsWith($url, $baseUrl)) {
+                return ltrim(Str::replaceFirst($baseUrl, '', $url), '/');
             }
         }
         
         return $url;
+    }
+
+    /**
+     * Dapatkan URL logo yang sudah diverifikasi
+     */
+    private function getVerifiedLogoUrl($logoPath)
+    {
+        $defaultLogo = asset('images/default-logo.png');
+        
+        if (empty($logoPath)) {
+            return $defaultLogo;
+        }
+
+        try {
+            // Jika sudah URL lengkap
+            if (filter_var($logoPath, FILTER_VALIDATE_URL)) {
+                return $logoPath;
+            }
+            
+            // Jika path storage
+            $path = $this->extractPathFromUrl($logoPath);
+            
+            if (Storage::disk($this->disk)->exists($path)) {
+                return Storage::disk($this->disk)->url($path);
+            }
+            
+            return $defaultLogo;
+        } catch (\Exception $e) {
+            Log::error('Logo URL verification error: ' . $e->getMessage());
+            return $defaultLogo;
+        }
     }
 }

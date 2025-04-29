@@ -5,52 +5,46 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\Product;
+use App\Models\Expense;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Models\Expense;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     public function index()
-
     {
-        // Default periode: bulan berjalan
-        $startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
-        $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
-        // Total transaksi hari ini
-        $todayTransactions = Transaction::whereDate('created_at', Carbon::today())->count();
+        // Get current month data
+        $currentMonthStart = Carbon::now()->startOfMonth();
+        $currentMonthEnd = Carbon::now()->endOfMonth();
+        
+        // Get previous month data for comparison
+        $previousMonthStart = Carbon::now()->subMonth()->startOfMonth();
+        $previousMonthEnd = Carbon::now()->subMonth()->endOfMonth();
 
-        // Total pendapatan hari ini
+        // Today's data
+        $todayTransactions = Transaction::whereDate('created_at', Carbon::today())->count();
         $todayRevenue = Transaction::whereDate('created_at', Carbon::today())->sum('total_amount');
 
-        // Produk terlaris (berdasarkan jumlah terjual)
-        $bestSellingProduct = TransactionDetail::select('product_id', DB::raw('SUM(quantity) as total_sold'))
+        // Best selling product
+        $bestSellingProduct = TransactionDetail::with('product')
+            ->select('product_id', DB::raw('SUM(quantity) as total_sold'))
             ->groupBy('product_id')
             ->orderByDesc('total_sold')
-            ->with('product')
             ->first();
 
-        // Data grafik transaksi (7 hari terakhir)
-        $transactionChartData = Transaction::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as total'))
-            ->whereDate('created_at', '>=', Carbon::now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+        // Last 7 days data for charts
+        $transactionChartData = $this->getLast7DaysTransactionData();
+        $revenueChartData = $this->getLast7DaysRevenueData();
 
-        // Data grafik pendapatan (7 hari terakhir)
-        $revenueChartData = Transaction::select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total_amount) as total'))
-            ->whereDate('created_at', '>=', Carbon::now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+        // Financial summaries
+        $income = Transaction::sum('total_amount');
+        $expenses = Expense::sum('amount');
+        $profit = $income - $expenses;
 
-
-            $income = Transaction::sum('total_amount');
-            $expenses = Expense::sum('amount');
-            $profit = $income - $expenses;
-
-            $monthlyComparison = $this->getMonthlyComparison($startDate, $endDate);
+        // Monthly comparisons
+        $monthlyComparison = $this->getMonthlyComparison($currentMonthStart, $currentMonthEnd);
+        $profitComparison = $this->getProfitComparison($currentMonthStart, $currentMonthEnd, $previousMonthStart, $previousMonthEnd);
 
         return view('dashboard.index', compact(
             'todayTransactions',
@@ -58,55 +52,120 @@ class DashboardController extends Controller
             'bestSellingProduct',
             'transactionChartData',
             'revenueChartData',
-            'income', 'expenses', 'profit',
-            'monthlyComparison'
+            'income', 
+            'expenses', 
+            'profit',
+            'monthlyComparison',
+            'profitComparison'
         ));
+    }
+
+    private function getLast7DaysTransactionData()
+    {
+        return Transaction::select(
+                DB::raw('DATE(created_at) as date'), 
+                DB::raw('COUNT(*) as total')
+            )
+            ->whereDate('created_at', '>=', Carbon::now()->subDays(7))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+    }
+
+    private function getLast7DaysRevenueData()
+    {
+        return Transaction::select(
+                DB::raw('DATE(created_at) as date'), 
+                DB::raw('SUM(total_amount) as total')
+            )
+            ->whereDate('created_at', '>=', Carbon::now()->subDays(7))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
     }
 
     private function getMonthlyComparison($startDate, $endDate)
     {
+        // Current period transactions
         $currentPeriod = Transaction::selectRaw('
                 SUM(total_amount) as total,
                 COUNT(*) as transaction_count
             ')
-            ->dateRange($startDate, $endDate)
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->first();
         
-        $currentExpenses = Expense::selectRaw(
-            'SUM(amount) as total') 
-            ->orWhereDate('date', '>=', $startDate)
-            ->orWhereDate('date', '<=', $endDate)
+        // Current period expenses
+        $currentExpenses = Expense::selectRaw('SUM(amount) as total')
+            ->whereBetween('date', [$startDate, $endDate])
             ->first();
 
-        $previousStart = Carbon::parse($startDate)->subMonth()->format('Y-m-d');
-        $previousEnd = Carbon::parse($endDate)->subMonth()->format('Y-m-d');
+        // Previous period dates
+        $previousStart = Carbon::parse($startDate)->subMonth();
+        $previousEnd = Carbon::parse($endDate)->subMonth();
         
+        // Previous period transactions
         $previousPeriod = Transaction::selectRaw('
                 SUM(total_amount) as total,
                 COUNT(*) as transaction_count
             ')
-            ->dateRange($previousStart, $previousEnd)
+            ->whereBetween('created_at', [$previousStart, $previousEnd])
             ->first();
         
-        $previousExpenses = Expense::selectRaw(
-            'SUM(amount) as total') 
-            ->orWhereDate('date', '>=', $startDate)
-            ->orWhereDate('date', '<=', $endDate)
+        // Previous period expenses
+        $previousExpenses = Expense::selectRaw('SUM(amount) as total')
+            ->whereBetween('date', [$previousStart, $previousEnd])
             ->first();
 
         return [
             'current' => [
                 'expense' => $currentExpenses->total ?? 0,
-                'transactions' => $currentPeriod->transaction_count ?? 0
+                'transactions' => $currentPeriod->transaction_count ?? 0,
+                'revenue' => $currentPeriod->total ?? 0
             ],
             'previous' => [
                 'expense' => $previousExpenses->total ?? 0,
-                'transactions' => $previousPeriod->transaction_count ?? 0
+                'transactions' => $previousPeriod->transaction_count ?? 0,
+                'revenue' => $previousPeriod->total ?? 0
             ],
-            'expense_change' => $currentExpenses->total && $previousExpenses->total ? 
-                (($currentExpenses->total - $previousExpenses->total) / $previousExpenses->total) * 100 : 0,
-            'transaction_change' => $currentPeriod->transaction_count && $previousPeriod->transaction_count ? 
-                (($currentPeriod->transaction_count - $previousPeriod->transaction_count) / $previousPeriod->transaction_count) * 100 : 0
+            'expense_change' => $this->calculatePercentageChange(
+                $previousExpenses->total ?? 0, 
+                $currentExpenses->total ?? 0
+            ),
+            'transaction_change' => $this->calculatePercentageChange(
+                $previousPeriod->transaction_count ?? 0, 
+                $currentPeriod->transaction_count ?? 0
+            ),
+            'revenue_change' => $this->calculatePercentageChange(
+                $previousPeriod->total ?? 0, 
+                $currentPeriod->total ?? 0
+            )
         ];
+    }
+
+    private function getProfitComparison($currentStart, $currentEnd, $previousStart, $previousEnd)
+    {
+        // Current period profit
+        $currentRevenue = Transaction::whereBetween('created_at', [$currentStart, $currentEnd])
+            ->sum('total_amount');
+        $currentExpenses = Expense::whereBetween('date', [$currentStart, $currentEnd])
+            ->sum('amount');
+        $currentProfit = $currentRevenue - $currentExpenses;
+
+        // Previous period profit
+        $previousRevenue = Transaction::whereBetween('created_at', [$previousStart, $previousEnd])
+            ->sum('total_amount');
+        $previousExpenses = Expense::whereBetween('date', [$previousStart, $previousEnd])
+            ->sum('amount');
+        $previousProfit = $previousRevenue - $previousExpenses;
+
+        return $this->calculatePercentageChange($previousProfit, $currentProfit);
+    }
+
+    private function calculatePercentageChange($oldValue, $newValue)
+    {
+        if ($oldValue == 0) {
+            return $newValue == 0 ? 0 : 100; // Handle division by zero
+        }
+        return (($newValue - $oldValue) / abs($oldValue)) * 100;
     }
 }

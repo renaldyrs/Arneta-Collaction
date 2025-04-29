@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arneta Collection</title>
     <!-- Favicon -->
@@ -38,13 +38,14 @@
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900">
-    <!-- Mobile Sidebar Overlay -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+    <!-- Mobile Sidebar Overlay - Improved -->
+    <div id="sidebarOverlay" 
+         class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity duration-300 ease-in-out opacity-0"
+         onclick="toggleSidebar()"></div>
     
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <div id="sidebar" class="fixed md:relative w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-20 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
-            <!-- Sidebar content here -->
+        <div id="sidebar" class="fixed md:relative w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <div class="h-full overflow-y-auto">
                 @include('partials.sidebar')
             </div>
@@ -53,12 +54,12 @@
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Navbar -->
-            <header class="bg-white dark:bg-gray-800 shadow-sm z-10">
+            <header class="bg-white dark:bg-gray-800 shadow-sm z-30">
                 @include('partials.navbar')
             </header>
             
-            <!-- Main Content - Adjusted for navbar height -->
-            <main class="flex-1 overflow-y-auto pt-16 mt-10 md:pt-0 px-4 md:pl-4 bg-gray-50 dark:bg-gray-800">
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto pt-16 md:pt-0 px-4 md:pl-4 bg-gray-50 dark:bg-gray-800">
                 <div class="container mx-auto py-6">
                     @yield('content')
                 </div>
@@ -72,16 +73,24 @@
     </div>
 
     <script>
-        // Toggle sidebar on mobile
+        // Improved toggle sidebar function with overlay animation
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
-            
-            // Prevent scrolling when sidebar is open
-            document.body.classList.toggle('overflow-hidden', !sidebar.classList.contains('-translate-x-full'));
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Opening sidebar
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+                sidebar.classList.remove('-translate-x-full');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                // Closing sidebar
+                overlay.classList.remove('opacity-100');
+                sidebar.classList.add('-translate-x-full');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+                document.body.classList.remove('overflow-hidden');
+            }
         }
 
         // Initialize sidebar based on screen size

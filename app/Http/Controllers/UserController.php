@@ -10,9 +10,15 @@ use RealRashid\SweetAlert\Facades\Alert;
 class UserController extends Controller
 {
     // Menampilkan daftar user
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::paginate(5);
+        $users = User::when($request->search, function($query, $search) {
+            return $query->search($search);
+        })
+        ->orderBy('name')
+        ->paginate(10)
+        ->withQueryString();
+        
         return view('users.index', compact('users'));
     }
 
@@ -29,7 +35,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,kasir', // Validasi role
+            'role' => 'required|in:admin,kasir',
         ]);
 
         User::create([
@@ -40,7 +46,6 @@ class UserController extends Controller
         ]);
 
         Alert::success('Berhasil', 'User berhasil ditambahkan.');
-
         return redirect()->route('users.index');
     }
 
@@ -53,20 +58,19 @@ class UserController extends Controller
     // Mengupdate user
     public function update(Request $request, User $user)
     {
-
         // Validasi input
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,kasir', // Validasi role
+            'role' => 'required|in:admin,kasir',
         ]);
 
         // Data yang akan diupdate
         $data = [
             'name' => $request->name,
             'email' => $request->email,
-            'role' => $request->role, // Pastikan role diupdate
+            'role' => $request->role,
         ];
 
         // Update password jika diisi
@@ -77,14 +81,15 @@ class UserController extends Controller
         // Update data user
         $user->update($data);
 
-        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
+        Alert::success('Berhasil', 'User berhasil diperbarui.');
+        return redirect()->route('users.index');
     }
 
     // Menghapus user
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+        Alert::success('Berhasil', 'User berhasil dihapus.');
+        return redirect()->route('users.index');
     }
-    
 }

@@ -61,7 +61,7 @@
             </header>
             
             <!-- Main Content -->
-            <main class="flex-1 overflow-y-auto pt-16 md:pt-0 px-4 md:pl-4 bg-gray-50 dark:bg-gray-800">
+            <main class="flex-1 overflow-y-auto pt-10 md:pt-0 px-4 md:pl-4 bg-gray-50 dark:bg-gray-800">
                 <div class="container mx-auto py-6">
                     @yield('content')
                 </div>
@@ -111,5 +111,7 @@
             window.addEventListener('resize', initSidebar);
         });
     </script>
+
+@include('sweetalert::alert')
 </body>
 </html>

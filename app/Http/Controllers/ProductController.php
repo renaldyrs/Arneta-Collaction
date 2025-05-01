@@ -14,18 +14,41 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
-    public function index()
-    {
-        $products = Product::with(['category'])
-        
-        ->orderBy('created_at', 'desc')
-        ->paginate(5);
-        $categories = Category::all();
-        $suppliers = Supplier::all();
-        $sizes = Size::all();
-        return view('products.index', compact('products', 'categories', 'suppliers', 'sizes'));
+    public function index(Request $request)
+{
+    $search = $request->input('search');
+    
+    $query = Product::with('category');
+    
+    if ($search) {
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('code', 'like', "%{$search}%")
+              ->orWhere('barcode', 'like', "%{$search}%")
+              ->orWhereHas('category', function($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
+              });
+        });
     }
-
+    
+    $totalProducts = Product::count();
+    $inStockProducts = Product::where('stock', '>', 10)->count();
+    $lowStockProducts = Product::whereBetween('stock', [1, 10])->count();
+    $outOfStockProducts = Product::where('stock', 0)->count();
+    
+    $products = $query->paginate(5);
+    $categories = Category::all();
+    
+    return view('products.index', compact(
+        'products',
+        'categories',
+        'totalProducts',
+        'inStockProducts',
+        'lowStockProducts',
+        'outOfStockProducts',
+        'search'
+    ));
+}
     // Menampilkan form tambah produk
     public function create()
     {

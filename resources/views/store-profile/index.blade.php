@@ -1,71 +1,48 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container flex justify-center mt-8">
-        <h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Informasi Toko</h1>
-    </div>
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-extrabold mb-8 text-center text-gray-800 dark:text-white">Profil Toko</h1>
 
-    <div class="container mx-auto p-4 flex justify-center items-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg dark:bg-gray-800">
+        <div class="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 space-y-6">
 
             <!-- Logo Toko -->
-            <div class="flex flex-col items-center mb-6">
+            <div class="flex flex-col items-center">
                 @php
-                    $defaultLogo = asset('images/default-logo.png');
-                    $logoUrl = $defaultLogo;
-
-                    if (!empty($profile->logo)) {
-                        $logoUrl = $profile->logo; // Langsung gunakan value dari database
-                    }
+                    $logoUrl = filter_var($profile->logo, FILTER_VALIDATE_URL) ? $profile->logo : asset('images/default-logo.png');
                 @endphp
 
-                <img src="{{ $logoUrl }}" alt="Logo Toko" class="mt-4 w-32 h-32 object-cover rounded-md shadow-md"
-                    onerror="this.onerror=null;this.src='{{ $defaultLogo }}'" id="store-logo">
+                <img src="{{ $logoUrl }}" alt="Logo Toko"
+                    class="w-32 h-32 object-cover rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg"
+                    onerror="this.src='{{ asset('images/default-logo.png') }}';">
+
+
+                <h2 class="mt-4 text-xl font-semibold text-gray-800 dark:text-white">{{ $profile->name }}</h2>
             </div>
 
-            <!-- Informasi Toko -->
-            <div class="mb-6">
-                <h2 class="text-lg font-medium text-gray-700 dark:text-gray-400">Nama Toko</h2>
-                <p class="mt-2 text-gray-800 dark:text-white">{{ $profile->name }}</p>
+            <!-- Informasi -->
+            <div class="space-y-4">
+
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Alamat</h3>
+                    <p class="mt-1 text-base text-gray-800 dark:text-gray-200">{{ $profile->address }}</p>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Telepon</h3>
+                    <p class="mt-1 text-base text-gray-800 dark:text-gray-200">{{ $profile->phone }}</p>
+                </div>
+
             </div>
 
-            <div class="mb-6">
-                <h2 class="text-lg font-medium text-gray-700 dark:text-gray-400">Alamat Toko</h2>
-                <p class="mt-2 text-gray-800 dark:text-white">{{ $profile->address }}</p>
-            </div>
-
-            <div class="mb-6">
-                <h2 class="text-lg font-medium text-gray-700 dark:text-gray-400">Nomor Telepon</h2>
-                <p class="mt-2 text-gray-800 dark:text-white">{{ $profile->phone }}</p>
-            </div>
-
-            <div class="flex justify-end">
+            <!-- Tombol Edit -->
+            <div class="flex justify-center pt-4">
                 <a href="{{ route('store-profile.edit') }}"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-md shadow-md transition duration-200">
+                    class="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-md transition duration-200">
                     <i class="fas fa-edit mr-2"></i> Edit Profil
                 </a>
             </div>
+
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const logo = document.getElementById('store-logo');
-
-            // Cek jika gambar gagal load
-            logo.addEventListener('error', function () {
-                console.log('Gagal memuat logo, menggunakan fallback');
-                this.src = '{{ asset("images/default-logo.png") }}';
-            });
-
-            // Preload image untuk deteksi error lebih awal
-            const imgTest = new Image();
-            imgTest.src = logo.src;
-            imgTest.onerror = function () {
-                logo.src = '{{ asset("images/default-logo.png") }}';
-            };
-        });
-    </script>
-@endpush

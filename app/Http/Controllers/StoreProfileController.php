@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\StoreProfile;
@@ -14,7 +15,6 @@ class StoreProfileController extends Controller
     public function index()
     {
         $profile = StoreProfile::first();
-        
         
         if (!$profile) {
             return redirect()->route('store-profile.create')
@@ -82,7 +82,7 @@ class StoreProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string',
-            'phone' => 'required|string',
+            'phone' => 'required|string|max:20',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -119,28 +119,28 @@ class StoreProfileController extends Controller
      * Upload logo ke cloud storage
      */
     private function uploadLogo($file)
-    {
-        try {
-            // Generate nama file unik dengan timestamp
-            $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
-            
-            // Path penyimpanan
-            $path = 'store-profile/' . date('Y/m') . '/' . $filename;
-            
-            // Upload ke storage
-            Storage::disk($this->disk)->put($path, file_get_contents($file));
-            
-            // Set visibility file (jika diperlukan)
-            Storage::disk($this->disk)->setVisibility($path, 'public');
-            
-            // Return full URL
-            return Storage::disk($this->disk)->url($path);
-            
-        } catch (\Exception $e) {
-            Log::error('Logo upload failed: ' . $e->getMessage());
-            return false;
-        }
+{
+    try {
+        // Generate nama file unik
+        $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+
+        // Path penyimpanan
+        $path = 'store-profile/' . date('Y/m') . '/' . $filename;
+
+        // Upload file ke S3
+        Storage::disk($this->disk)->put($path, file_get_contents($file), 'public');
+
+        // Ambil full URL dari S3
+        $url = Storage::disk($this->disk)->url($path);
+
+        // Force URL pakai HTTPS (biar aman untuk <img src>)
+        return str_replace('http://', 'https://', $url);
+
+    } catch (\Exception $e) {
+        Log::error('Logo upload failed: ' . $e->getMessage());
+        return false;
     }
+}
 
     /**
      * Hapus logo lama dari storage
@@ -170,18 +170,23 @@ class StoreProfileController extends Controller
      */
     private function extractPathFromUrl($url)
     {
-        if (filter_var($url, FILTER_VALIDATE_URL)) {
-            $baseUrl = Storage::disk($this->disk)->url('');
-            $parsedUrl = parse_url($url);
-            $parsedBase = parse_url($baseUrl);
-            
-            // Bandingkan host dan path awal
-            if ($parsedUrl['host'] === $parsedBase['host'] && 
-                strpos($parsedUrl['path'], $parsedBase['path']) === 0) {
-                return ltrim(substr($parsedUrl['path'], strlen($parsedBase['path'])), '/');
+        try {
+            if (filter_var($url, FILTER_VALIDATE_URL)) {
+                $baseUrl = rtrim(Storage::disk($this->disk)->url(''), '/');
+                $parsedUrl = parse_url($url);
+                $parsedBase = parse_url($baseUrl);
+
+                // Memastikan host dan path awal sama
+                if (isset($parsedUrl['host'], $parsedBase['host']) &&
+                    $parsedUrl['host'] === $parsedBase['host'] &&
+                    strpos($parsedUrl['path'], $parsedBase['path']) === 0) {
+                    return ltrim(substr($parsedUrl['path'], strlen($parsedBase['path'])), '/');
+                }
             }
+        } catch (\Exception $e) {
+            Log::error('Path extraction failed: ' . $e->getMessage());
         }
-        
-        return $url;
+
+        return null;
     }
 }

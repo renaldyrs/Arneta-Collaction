@@ -71,6 +71,7 @@ Route::prefix('financial-reports')->group(function () {
     Route::get('/laporan-keuangan', [FinancialReportController::class, 'laporanKeuangan'])->name('financial-reports.laporan-keuangan');
 });
 
+
 // Store Profile
 Route::prefix('store-profile')->group(function () {
     Route::get('/', [StoreProfileController::class, 'index'])->name('store-profile.index');

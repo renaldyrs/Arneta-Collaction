@@ -82,10 +82,9 @@ class StoreProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string',
-            'phone' => 'required|string|max:20',
+            'phone' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
-
         try {
             $profile = StoreProfile::firstOrFail();
             $oldLogoPath = $profile->logo;

@@ -106,3 +106,10 @@ Route::resource('users', UserController::class);
 
 Route::resource('payment', PaymentMethodController::class)->middleware('auth');
 
+Route::get('/debug-s3', function () {
+    return [
+        'AWS_BUCKET' => env('AWS_BUCKET'),
+        'Disk Config' => config('filesystems.disks.laravelcloud'),
+        'Storage Test' => Storage::disk('laravelcloud')->exists('/')
+    ];
+});

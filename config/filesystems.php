@@ -48,7 +48,7 @@ return [
     'driver' => 's3',
     'key' => env('AWS_ACCESS_KEY_ID'),
     'secret' => env('AWS_SECRET_ACCESS_KEY'),
-    'region' => env('AWS_DEFAULT_REGION'),
+    'region' => env('AWS_DEFAULT_REGION', 'ap-southeast-1'),
     'bucket' => env('AWS_BUCKET', 'fls-9ed71c8e-cff8-40bc-a9ca-6fc506df2ad8'),
     'url' => env('AWS_URL'), // URL CloudFront atau laravel.cloud kamu
     'endpoint' => env('AWS_ENDPOINT'),

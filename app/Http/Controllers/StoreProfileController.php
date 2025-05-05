@@ -115,7 +115,7 @@ class StoreProfileController extends Controller
         }
     }
 
-    
+
     /**
      * Upload logo ke cloud storage
      */
@@ -129,7 +129,12 @@ class StoreProfileController extends Controller
         $path = 'store-profile/' . date('Y/m') . '/' . $filename;
 
         // Upload file ke S3
-        Storage::disk($this->disk)->put($path, file_get_contents($file), 'public');
+        Storage::disk($this->disk)->put(
+    $path, 
+    file_get_contents($file),
+    ['visibility' => 'public', 'ACL' => 'public-read']
+);
+
 
         // Ambil full URL dari S3
         $url = Storage::disk($this->disk)->url($path);

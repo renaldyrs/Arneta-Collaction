@@ -15,8 +15,12 @@
                     }
                 @endphp
 
-                <img src="{{ $logoUrl }}" alt="Logo Toko" class="mt-4 w-32 h-32 object-cover rounded-md shadow-md"
-                    onerror="this.onerror=null;this.src='{{ $defaultLogo }}'" id="store-logo">
+<img src="{{ $logoUrl }}" 
+     alt="Logo Toko" 
+     class="mt-4 w-32 h-32 object-cover rounded-md shadow-md"
+     onerror="this.onerror=null;this.src='{{ asset('images/default-logo.png') }}'" 
+     id="store-logo" 
+     loading="lazy">
             </div>
             <h1 class="text-3xl font-extrabold text-gray-800 dark:text-white bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 Welcome Back

@@ -115,6 +115,7 @@ class StoreProfileController extends Controller
         }
     }
 
+    
     /**
      * Upload logo ke cloud storage
      */

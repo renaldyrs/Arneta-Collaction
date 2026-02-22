@@ -1,134 +1,291 @@
 @extends('layouts.login')
 
 @section('content')
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 flex justify-center items-center min-h-screen p-4">
-    <div class="bg-white dark:bg-gray-800 p-8 sm:p-10 rounded-2xl shadow-xl w-full max-w-md mx-auto border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-2xl">
-        <!-- Animated Logo Section -->
-        <div class="text-center mb-8 flex flex-col items-center transform hover:scale-105 transition-transform duration-300">
-            <div class="mb-4 p-3 bg-blue-100 dark:bg-blue-900 rounded-full shadow-inner">
-            @php
-                    $defaultLogo = asset('images/default-logo.png');
-                    $logoUrl = $defaultLogo;
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; }
 
-                    if (!empty($profile->logo)) {
-                        $logoUrl = $profile->logo; // Langsung gunakan value dari database
-                    }
-                @endphp
+    body {
+        min-height: 100vh;
+        background: #0d1520;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
 
-<img src="{{ $logoUrl }}" 
-     alt="Logo Toko" 
-     class="mt-4 w-32 h-32 object-cover rounded-md shadow-md"
-     onerror="this.onerror=null;this.src='{{ asset('images/default-logo.png') }}'" 
-     id="store-logo" 
-     loading="lazy">
-            </div>
-            <h1 class="text-3xl font-extrabold text-gray-800 dark:text-white bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                Welcome Back
-                <br>
-                {{DB::table('store_profiles')->value('name')}}
-            </h1>
-            <p class="text-gray-500 dark:text-gray-400 mt-2">Sign in to access your account</p>
-        </div>
+    /* ── Animated background ── */
+    .bg-orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.18;
+        animation: orb-float 8s ease-in-out infinite;
+    }
+    .bg-orb-1 { width: 420px; height: 420px; background: #14b890; top: -80px; left: -100px; animation-delay: 0s; }
+    .bg-orb-2 { width: 350px; height: 350px; background: #6366f1; bottom: -60px; right: -80px; animation-delay: -3s; }
+    .bg-orb-3 { width: 250px; height: 250px; background: #3b82f6; top: 40%; left: 30%; animation-delay: -5s; }
 
-        <!-- Social Login Buttons -->
-        <!-- <div class="flex gap-4 mb-6">
-            <a href="#" class="flex-1 flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg transition-all duration-200">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd"></path>
-                </svg>
-                <span class="text-sm font-medium">Facebook</span>
-            </a>
-            <a href="#" class="flex-1 flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg transition-all duration-200">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"></path>
-                </svg>
-                <span class="text-sm font-medium">Google</span>
-            </a>
-        </div> -->
+    @keyframes orb-float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33%       { transform: translate(20px, -20px) scale(1.05); }
+        66%       { transform: translate(-15px, 15px) scale(0.97); }
+    }
 
-        <!-- Divider -->
-        
+    /* ── Grid pattern ── */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: 
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 48px 48px;
+        pointer-events: none;
+    }
 
-        <form method="POST" action="{{ route('login') }}">
-            @csrf
+    /* ── Login card ── */
+    .login-card {
+        position: relative;
+        width: 100%;
+        max-width: 420px;
+        background: rgba(255,255,255,0.04);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 1.5rem;
+        padding: 2.25rem;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+        animation: card-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-            <!-- Email Field with Floating Label -->
-            <div class="relative mb-6">
-                <input type="email" id="email" name="email" value="{{ old('email') }}"
-                    class="peer w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white @error('email') border-red-500 @enderror"
-                    required autocomplete="email" autofocus placeholder=" ">
-                <label for="email" class="absolute left-3 top-3 px-1 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 transition-all duration-200 pointer-events-none peer-focus:text-blue-600 peer-focus:dark:text-blue-400 peer-focus:text-sm peer-focus:-translate-y-5 peer-focus:bg-white peer-focus:dark:bg-gray-800 peer-placeholder-shown:text-base peer-placeholder-shown:translate-y-0">
-                    Email Address
-                </label>
-                @error('email')
-                    <span class="text-red-500 text-xs mt-1 block" role="alert">
-                        <strong>{{ $message }}</strong>
-                    </span>
-                @enderror
-            </div>
+    @keyframes card-in {
+        from { opacity: 0; transform: translateY(24px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
-            <!-- Password Field with Floating Label -->
-            <div class="relative mb-6">
-                <input type="password" id="password" name="password"
-                    class="peer w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white @error('password') border-red-500 @enderror"
-                    required autocomplete="current-password" placeholder=" ">
-                <label for="password" class="absolute left-3 top-3 px-1 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 transition-all duration-200 pointer-events-none peer-focus:text-blue-600 peer-focus:dark:text-blue-400 peer-focus:text-sm peer-focus:-translate-y-5 peer-focus:bg-white peer-focus:dark:bg-gray-800 peer-placeholder-shown:text-base peer-placeholder-shown:translate-y-0">
-                    Password
-                </label>
-                @error('password')
-                    <span class="text-red-500 text-xs mt-1 block" role="alert">
-                        <strong>{{ $message }}</strong>
-                    </span>
-                @enderror
-            </div>
+    /* ── Brand logo chip ── */
+    .brand-chip {
+        width: 56px; height: 56px;
+        background: linear-gradient(135deg, #0d9373, #14b890);
+        border-radius: 1rem;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 8px 24px rgba(13,147,115,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+        margin: 0 auto 1.25rem;
+        animation: pulse-glow 3s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+        0%,100% { box-shadow: 0 8px 24px rgba(13,147,115,0.45), 0 0 0 1px rgba(255,255,255,0.08); }
+        50%      { box-shadow: 0 8px 32px rgba(13,147,115,0.7), 0 0 0 4px rgba(13,147,115,0.15); }
+    }
 
-            <!-- Remember Me & Forgot Password -->
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember" name="remember" 
-                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600">
-                    <label for="remember" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                        Remember me
-                    </label>
-                </div>
+    /* ── Inputs ── */
+    .login-input {
+        width: 100%;
+        background: rgba(255,255,255,0.06);
+        border: 1.5px solid rgba(255,255,255,0.1);
+        border-radius: 0.75rem;
+        padding: 0.75rem 0.875rem 0.75rem 2.75rem;
+        color: #fff;
+        font-size: 0.875rem;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .login-input::placeholder { color: rgba(255,255,255,0.25); }
+    .login-input:focus {
+        border-color: #14b890;
+        background: rgba(20,184,144,0.08);
+        box-shadow: 0 0 0 4px rgba(20,184,144,0.12);
+    }
 
-                @if (Route::has('password.request'))
-                    <a class="text-sm text-blue-600 hover:underline dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
-                        href="{{ route('password.request') }}">
-                        Forgot password?
-                    </a>
+    /* ── Button ── */
+    .login-btn {
+        width: 100%;
+        padding: 0.8rem;
+        border-radius: 0.75rem;
+        border: none;
+        background: linear-gradient(135deg, #0d9373 0%, #14b890 50%, #10b981 100%);
+        background-size: 200% auto;
+        color: #fff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-position 0.4s, box-shadow 0.2s, transform 0.15s;
+        box-shadow: 0 4px 20px rgba(13,147,115,0.4);
+        letter-spacing: 0.01em;
+    }
+    .login-btn:hover {
+        background-position: right center;
+        box-shadow: 0 6px 28px rgba(13,147,115,0.55);
+        transform: translateY(-1px);
+    }
+    .login-btn:active { transform: translateY(0); }
+
+    /* ── Divider ── */
+    .login-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+        margin: 1rem 0;
+    }
+
+    /* ── Labels ── */
+    .login-label { display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 0.4rem; }
+
+    /* ── Error ── */
+    .login-error {
+        background: rgba(239,68,68,0.1);
+        border: 1px solid rgba(239,68,68,0.25);
+        border-radius: 0.65rem;
+        padding: 0.65rem 0.875rem;
+        font-size: 0.8rem;
+        color: #fca5a5;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<body>
+    <!-- Orbs -->
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+
+    <div class="login-card">
+        @php
+            try { $profile = \App\Models\StoreProfile::first(); } catch(\Exception $e) { $profile = null; }
+            $storeName = $profile->name ?? 'Arneta Collection';
+            $logoUrl = null;
+            if (!empty($profile->logo)) {
+                $logoUrl = filter_var($profile->logo, FILTER_VALIDATE_URL)
+                    ? $profile->logo
+                    : asset('storage/'.$profile->logo);
+            }
+        @endphp
+
+        <!-- Brand -->
+        <div class="text-center">
+            <div class="brand-chip">
+                @if($logoUrl)
+                    <img src="{{ $logoUrl }}" alt="Logo" class="w-full h-full object-cover rounded-[14px]"
+                         onerror="this.style.display='none'">
+                @else
+                    <i class="fas fa-store text-white text-xl"></i>
                 @endif
             </div>
 
-            <!-- Submit Button with Animation -->
-            <button type="submit"
-                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                <span class="font-semibold">Sign In</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline ml-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
+            <h1 class="text-2xl font-bold text-white mb-1">Selamat Datang</h1>
+            <p class="text-sm" style="color: rgba(255,255,255,0.4);">Masuk ke <span style="color: #2dd4aa;">{{ $storeName }}</span></p>
+        </div>
+
+        <div class="login-divider mt-5"></div>
+
+        <!-- Errors -->
+        @if($errors->any())
+        <div class="login-error mb-4">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i>
+                <div>
+                    @foreach($errors->all() as $error)
+                        <p>{{ $error }}</p>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+
+        @if(session('status'))
+        <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:0.65rem;padding:0.65rem 0.875rem;font-size:0.8rem;color:#6ee7b7;margin-bottom:1rem;">
+            <i class="fas fa-check-circle mr-2"></i>{{ session('status') }}
+        </div>
+        @endif
+
+        <!-- Form -->
+        <form method="POST" action="{{ route('login') }}" class="space-y-4">
+            @csrf
+
+            <!-- Email -->
+            <div>
+                <label class="login-label">Email</label>
+                <div class="relative">
+                    <i class="fas fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-xs" style="color: rgba(255,255,255,0.3);"></i>
+                    <input type="email" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus
+                           placeholder="email@contoh.com"
+                           class="login-input">
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label class="login-label">Password</label>
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-xs" style="color: rgba(255,255,255,0.3);"></i>
+                    <input type="password" id="password" name="password" required autocomplete="current-password"
+                           placeholder="••••••••"
+                           class="login-input" style="padding-right: 2.75rem;">
+                    <button type="button" onclick="togglePwd()" class="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors"
+                            style="color: rgba(255,255,255,0.3);" id="eyeBtn">
+                        <i class="fas fa-eye text-xs" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Remember + Forgot -->
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="remember" class="w-3.5 h-3.5 rounded" style="accent-color: #14b890;"
+                           {{ old('remember') ? 'checked' : '' }}>
+                    <span style="font-size:0.8rem; color: rgba(255,255,255,0.45);">Ingat saya</span>
+                </label>
+                @if(Route::has('password.request'))
+                <a href="{{ route('password.request') }}" style="font-size:0.8rem; color: #2dd4aa;" class="hover:underline">
+                    Lupa password?
+                </a>
+                @endif
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="login-btn mt-1">
+                <span id="btnText">Masuk</span>
+                <i class="fas fa-arrow-right ml-2 text-sm"></i>
             </button>
 
-            <!-- Registration Link -->
-            @if (Route::has('register'))
-                <div class="mt-8 text-center">
-                    <p class="text-gray-600 dark:text-gray-400">
-                        Don't have an account? 
-                        <a href="{{ route('register') }}"
-                            class="text-blue-600 hover:underline dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
-                            Create one
-                        </a>
-                    </p>
-                </div>
+            @if(Route::has('register'))
+            <div class="login-divider"></div>
+            <p class="text-center" style="font-size:0.8rem; color: rgba(255,255,255,0.35);">
+                Belum punya akun?
+                <a href="{{ route('register') }}" style="color: #2dd4aa;" class="font-semibold hover:underline ml-1">Daftar</a>
+            </p>
             @endif
         </form>
     </div>
 
     <!-- Footer -->
-    <div class="absolute bottom-4 text-center w-full">
-        <p class="text-gray-500 dark:text-gray-400 text-sm">
-            &copy; {{ date('Y') }} Your Company. All rights reserved.
-        </p>
-    </div>
+    <p class="fixed bottom-4 text-center w-full text-xs" style="color: rgba(255,255,255,0.2);">
+        &copy; {{ date('Y') }} {{ $storeName }} · POS System
+    </p>
 </body>
+
+@push('scripts')
+<script>
+function togglePwd() {
+    const inp = document.getElementById('password');
+    const ico = document.getElementById('eyeIcon');
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        ico.className = 'fas fa-eye-slash text-xs';
+    } else {
+        inp.type = 'password';
+        ico.className = 'fas fa-eye text-xs';
+    }
+}
+// Submit loading state
+document.querySelector('form').addEventListener('submit', function() {
+    const btn = document.querySelector('.login-btn');
+    btn.style.opacity = '0.7';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memuat...';
+});
+</script>
+@endpush
+
 @endsection

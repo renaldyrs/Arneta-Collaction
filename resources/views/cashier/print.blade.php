@@ -1,124 +1,264 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Struk #{{ $transaction->invoice_number }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Struk - {{ $transaction->invoice_number }}</title>
     <style>
-        @media print {
-            @page {
-                size: 80mm auto;
-                margin: 0;
-            }
-            body {
-                font-family: 'Courier New', monospace;
-                font-size: 12px;
-                width: 100%;
-            }
-            .no-print {
-                display: none !important;
-            }
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background: white;
+            color: black;
+            width: 80mm; /* Ukuran thermal printer 80mm */
+            margin: 0 auto;
         }
+        
         .receipt {
             width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-            padding: 10px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #000;
+        }
+        
+        .store-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+        }
+        
+        .store-detail {
+            font-size: 11px;
+            margin: 2px 0;
+        }
+        
+        .transaction-info {
+            font-size: 11px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #000;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+        }
+        
+        .items {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #000;
+        }
+        
+        .item {
+            margin-bottom: 8px;
+        }
+        
+        .item-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0 0 2px 0;
+        }
+        
+        .item-size {
+            font-size: 10px;
+            margin-left: 5px;
+            color: #555;
+        }
+        
+        .item-detail {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+        
+        .total-section {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #000;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin: 3px 0;
+        }
+        
+        .grand-total {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid #000;
+        }
+        
+        .payment-info {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #000;
+            font-size: 11px;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            margin-top: 15px;
+        }
+        
+        .thank-you {
+            font-size: 12px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        /* Style untuk print */
+        @media print {
+            body {
+                padding: 0;
+                width: 100%;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+        
+        /* Style untuk screen */
+        @media screen {
+            body {
+                background: #f5f5f5;
+                padding: 20px;
+            }
+            
+            .receipt {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
         }
     </style>
 </head>
-<body onload="window.print()">
+<body>
     <div class="receipt">
-        <div class="text-center mb-2">
-            <h1 class="font-bold text-lg">{{ DB::table('store_profiles')->first()->name }}</h1>
-            <img src="{{ DB::table('store_profiles')->first()->logo ? asset('storage/' . DB::table('store_profiles')->first()->logo) : asset('images/default-logo.png') }}"
-                alt="Logo Toko" class="w-20 h-20 rounded-full mx-auto">
-            <p>{{ DB::table('store_profiles')->first()->address }}</p>
-            <p>Telp: {{ DB::table('store_profiles')->first()->phone }}</p>
+        <!-- Header -->
+        <div class="header">
+            <h1 class="store-name">{{ $storeProfile->name ?? 'TOKO' }}</h1>
+            <p class="store-detail">{{ $storeProfile->address ?? '-' }}</p>
+            <p class="store-detail">Telp: {{ $storeProfile->phone ?? '-' }}</p>
         </div>
 
-        <div class="border-t border-b border-black py-2 my-2">
-            <div class="flex justify-between">
-                <span>No. Struk:</span>
+        <!-- Transaction Info -->
+        <div class="transaction-info">
+            <div class="info-row">
+                <span>No. Invoice</span>
                 <span>{{ $transaction->invoice_number }}</span>
             </div>
-            <div class="flex justify-between">
-                <span>Tanggal:</span>
+            <div class="info-row">
+                <span>Tanggal</span>
                 <span>{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
             </div>
-            <div class="flex justify-between">
-                <span>Kasir:</span>
-                <span>{{ Auth::user()->name }}</span>
+            <div class="info-row">
+                <span>Kasir</span>
+                <span>{{ $transaction->user->name ?? '-' }}</span>
             </div>
         </div>
 
-        <div class="mb-4">
-            <table class="w-full">
-                <thead>
-                    <tr class="border-b border-black">
-                        <th class="text-left">Item</th>
-                        <th class="text-right">Qty</th>
-                        <th class="text-right">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($transaction->details as $detail)
-                    <tr>
-                        <td>
-                            {{ $detail->product->name }}
-                            @if ($detail->size)
-                                <span class="text-sm text-gray-500">({{ $detail->size }})</span>
-                            @endif
-                        </td>
-                        <td class="text-right">{{ $detail->quantity }} x {{ number_format($detail->price) }}</td>
-                        <td class="text-right">{{ number_format($detail->subtotal) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <!-- Items -->
+        <div class="items">
+            @foreach($transaction->details as $detail)
+            <div class="item">
+                <div class="item-name">
+                    {{ $detail->product->name }}
+                    @if($detail->size)
+                    <span class="item-size">({{ $detail->size }})</span>
+                    @endif
+                </div>
+                <div class="item-detail">
+                    <span>{{ $detail->quantity }} x Rp {{ number_format($detail->price, 0, ',', '.') }}</span>
+                    <span>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</span>
+                </div>
+            </div>
+            @endforeach
         </div>
 
-        <div class="border-t border-black pt-2">
-            <div class="flex justify-between font-bold">
-                <span>TOTAL:</span>
-                <span>Rp {{ number_format($transaction->total_amount) }}</span>
+        <!-- Total -->
+        <div class="total-section">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span>Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
             </div>
-            <div class="flex justify-between">
-                <span>Pembayaran:</span>
-                <span>{{ $transaction->paymentMethod->name }}</span>
+            <div class="total-row">
+                <span>Diskon</span>
+                <span>Rp 0</span>
             </div>
-            <div class="flex justify-between font-bold">
-                <span>Pembayaran:</span>
-                <span>Rp {{ number_format($transaction->payment_amount) }}</span>
-            </div>
-            <div class="flex justify-between font-bold">
-                <span>Kembalian:</span>
-                <span>Rp {{ number_format($transaction->change_amount) }}</span>
+            <div class="total-row grand-total">
+                <span>TOTAL</span>
+                <span>Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
             </div>
         </div>
 
-        <div class="text-center mt-4">
-            <p>Terima kasih telah berbelanja</p>
-            <p>Barang yang sudah dibeli tidak dapat ditukar/dikembalikan</p>
+        <!-- Payment Info -->
+        <div class="payment-info">
+            <div class="info-row">
+                <span>Metode Pembayaran</span>
+                <span>{{ $transaction->paymentMethod->name ?? 'Tunai' }}</span>
+            </div>
+            <div class="info-row">
+                <span>Jumlah Bayar</span>
+                <span>Rp {{ number_format($transaction->payment_amount, 0, ',', '.') }}</span>
+            </div>
+            <div class="info-row">
+                <span>Kembalian</span>
+                <span>Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+            </div>
         </div>
 
-        <div class="no-print text-center mt-6">
-            <a href="{{ route('cashier.index') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mr-2">Tutup Jendela
-            </a>
+        <!-- Footer -->
+        <div class="footer">
+            <p class="thank-you">Terima Kasih</p>
+            <p>Barang yang sudah dibeli tidak dapat</p>
+            <p>ditukar atau dikembalikan</p>
+            <p>www.tokoanda.com</p>
         </div>
     </div>
 
+    <!-- Auto Print Script -->
     <script>
-        // Auto print jika dari halaman transaksi
-        @if(request()->has('print'))
+        // Auto print saat halaman dimuat
         window.onload = function() {
+            console.log('Print page loaded');
+            
+            // Tunggu sebentar untuk memastikan semua konten termuat
             setTimeout(function() {
+                console.log('Triggering print dialog...');
+                
+                // Coba trigger print
                 window.print();
+                
+                // Optional: Auto close setelah print dialog ditutup
+                window.onafterprint = function() {
+                    console.log('Print dialog closed');
+                    // Bisa redirect atau close window
+                    // window.close();
+                };
+                
+                // Fallback untuk browser yang tidak support afterprint
                 setTimeout(function() {
-                    window.location.href = "{{ route('cashier.index') }}";
-                }, 1000); // Redirect setelah 1 detik
-            }, 500); // Delay print 0.5 detik
+                    console.log('Check if print dialog was opened');
+                }, 1000);
+                
+            }, 500);
         };
-        @endif
     </script>
 </body>
 </html>

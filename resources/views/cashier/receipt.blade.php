@@ -1,87 +1,185 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Struk Pembayaran</title>
+    <title>Struk Transaksi</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            width: 80mm; /* Ukuran struk untuk printer thermal */
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background: #fff;
+            color: #000;
+        }
+        .receipt {
+            max-width: 300px;
             margin: 0 auto;
-            padding: 10px;
         }
-        .header, .footer {
+        .header {
             text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
         }
-        .header h1 {
+        .store-name {
             font-size: 18px;
+            font-weight: bold;
             margin: 0;
         }
-        .header p {
+        .store-detail {
             font-size: 12px;
-            margin: 5px 0;
+            margin: 2px 0;
+        }
+        .transaction-info {
+            font-size: 12px;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
         }
         .items {
-            margin: 10px 0;
+            margin-bottom: 15px;
         }
-        .items table {
-            width: 100%;
-            border-collapse: collapse;
+        .item {
+            font-size: 12px;
+            margin-bottom: 5px;
         }
-        .items th, .items td {
-            border-bottom: 1px dashed #000;
-            padding: 5px 0;
-            text-align: left;
-        }
-        .total {
-            margin-top: 10px;
+        .item-name {
             font-weight: bold;
         }
+        .item-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-left: 10px;
+        }
+        .total {
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+            padding: 10px 0;
+            margin: 10px 0;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .payment-info {
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 20px;
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+        }
+        .thank-you {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        @media print {
+            body {
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
     </style>
-    <script>
-        // Print struk otomatis saat halaman dimuat
-        window.onload = function() {
-            window.print();
-        };
-    </script>
 </head>
 <body>
-    <div class="header">
-        <h1>Toko Pakaian XYZ</h1>
-        <p>Jl. Contoh No. 123, Kota Contoh</p>
-        <p>Telp: 0812-3456-7890</p>
+    <div class="receipt">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="store-name">{{ $storeProfile->name ?? 'Toko' }}</h1>
+            <p class="store-detail">{{ $storeProfile->address ?? '-' }}</p>
+            <p class="store-detail">Telp: {{ $storeProfile->phone ?? '-' }}</p>
+        </div>
+
+        <!-- Transaction Info -->
+        <div class="transaction-info">
+            <div class="payment-row">
+                <span>No. Invoice</span>
+                <span>{{ $transaction->invoice_number }}</span>
+            </div>
+            <div class="payment-row">
+                <span>Tanggal</span>
+                <span>{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
+            </div>
+            <div class="payment-row">
+                <span>Kasir</span>
+                <span>{{ $transaction->user->name ?? '-' }}</span>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="items">
+            @foreach($transaction->details as $detail)
+            <div class="item">
+                <div class="item-name">{{ $detail->product->name }}</div>
+                @if($detail->size)
+                <div style="margin-left: 10px; font-size: 11px;">Ukuran: {{ $detail->size }}</div>
+                @endif
+                <div class="item-detail">
+                    <span>{{ $detail->quantity }} x Rp {{ number_format($detail->price, 0, ',', '.') }}</span>
+                    <span>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</span>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <!-- Total -->
+        <div class="total">
+            <div class="payment-row">
+                <span>Subtotal</span>
+                <span>Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+            </div>
+            <div class="payment-row">
+                <span>Diskon</span>
+                <span>Rp 0</span>
+            </div>
+            <div class="total-row">
+                <span>TOTAL</span>
+                <span>Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="payment-info">
+            <div class="payment-row">
+                <span>Metode Pembayaran</span>
+                <span>{{ $transaction->paymentMethod->name ?? 'Tunai' }}</span>
+            </div>
+            <div class="payment-row">
+                <span>Jumlah Bayar</span>
+                <span>Rp {{ number_format($transaction->payment_amount, 0, ',', '.') }}</span>
+            </div>
+            <div class="payment-row">
+                <span>Kembalian</span>
+                <span>Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="thank-you">Terima Kasih</p>
+            <p>Barang yang sudah dibeli tidak dapat</p>
+            <p>ditukar atau dikembalikan</p>
+            <p>www.tokoanda.com</p>
+        </div>
     </div>
-    <div class="items">
-        <table>
-            <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Qty</th>
-                    <th>Harga</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($items as $item)
-                <tr>
-                    <td>{{ $item['name'] }}</td>
-                    <td>{{ $item['quantity'] }}</td>
-                    <td>Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
-                    <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    <div class="total">
-        <p>Total: Rp {{ number_format($totalAmount, 0, ',', '.') }}</p>
-        <p>Pembayaran: Rp {{ number_format($paymentAmount, 0, ',', '.') }}</p>
-        <p>Kembalian: Rp {{ number_format($change, 0, ',', '.') }}</p>
-    </div>
-    <div class="footer">
-        <p>Terima kasih telah berbelanja!</p>
-        <p>{{ now()->format('d/m/Y H:i:s') }}</p>
-    </div>
+
+    <!-- Auto Print Script -->
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
 </body>
 </html>

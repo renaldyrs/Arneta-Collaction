@@ -1,245 +1,431 @@
 @extends('layouts.app')
-
 @section('content')
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div class="container mx-auto px-4 py-8">
-            <!-- Header Section -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">User Management</h1>
-                <p class="text-gray-600 dark:text-gray-300">Manage your system users efficiently</p>
+
+    {{-- Page Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manajemen Pengguna</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Kelola akun dan hak akses pengguna sistem</p>
+        </div>
+        <button onclick="openCreateModal()" class="btn-primary">
+            <i class="fas fa-user-plus text-sm"></i> Tambah Pengguna
+        </button>
+    </div>
+
+    {{-- Stats Cards --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        @php
+            $totalUsers = $users->total() ?? count($users);
+            $adminCount = \App\Models\User::where('role', 'admin')->count();
+            $kasirCount = \App\Models\User::where('role', 'kasir')->count();
+        @endphp
+        <div
+            class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                style="background: rgba(16,185,129,0.12);">
+                <i class="fas fa-users text-emerald-500 text-lg"></i>
             </div>
-
-            <!-- Main Content Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Add User Card -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
-                            <h2 class="text-xl font-semibold text-white flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Add New User
-                            </h2>
-                        </div>
-                        
-                        <div class="p-6">
-                            <form action="{{ route('users.store') }}" method="POST">
-                                @csrf
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
-                                            Name <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <input type="text" id="name" name="name" required
-                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                placeholder="John Doe">
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
-                                            Email <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                                                </svg>
-                                            </div>
-                                            <input type="email" id="email" name="email" required
-                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                placeholder="user@example.com">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
-                                            Password <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <input type="password" id="password" name="password" required
-                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                placeholder="••••••••">
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
-                                            Confirm Password <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <input type="password" id="password_confirmation" name="password_confirmation" required
-                                                class="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                placeholder="••••••••">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-6">
-                                    <label for="role" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
-                                        Role <span class="text-red-500">*</span>
-                                    </label>
-                                    <select name="role" id="role" required
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                        <option value="admin">Admin</option>
-                                        <option value="kasir">Cashier</option>
-                                    </select>
-                                </div>
-
-                                <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
-                                    <button type="reset"
-                                        class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors">
-                                        Reset
-                                    </button>
-                                    <button type="submit"
-                                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                        </svg>
-                                        Save
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- User List Card -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 flex flex-col md:flex-row justify-between items-center">
-                            <h2 class="text-xl font-semibold text-white flex items-center mb-4 md:mb-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                                User List
-                            </h2>
-                            <div class="relative w-full md:w-auto">
-                                <form method="GET" action="{{ route('users.index') }}" class="relative w-full md:w-64">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-200" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <input type="text" name="search" placeholder="Search users..."
-                                        value="{{ request('search') }}"
-                                        class="pl-10 pr-4 py-2 w-full border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent bg-blue-50 bg-opacity-50 text-white placeholder-blue-200">
-                                </form>
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                            #
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                            Name
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 hidden sm:table-cell">
-                                            Email
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                            Role
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                    @foreach ($users as $user)
-                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                                {{ $loop->iteration }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->name }}</div>
-                                                <div class="text-xs text-gray-500 sm:hidden dark:text-gray-400">{{ $user->email }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell dark:text-gray-400">
-                                                {{ $user->email }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                    {{ $user->role === 'admin' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' }}">
-                                                    {{ ucfirst($user->role) }}
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <div class="flex justify-end space-x-3">
-                                                    <a href="#"
-                                                        class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                                                        title="Edit">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                                        </svg>
-                                                    </a>
-                                                    <form id="delete-form-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="button" 
-                                                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                                                            title="Delete"
-                                                            onclick="confirmDelete({{ $user->id }})">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Pagination -->
-                        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 dark:bg-gray-700 dark:border-gray-600">
-                            {{ $users->links('vendor.tailwind') }}
-                        </div>
-                    </div>
-                </div>
+            <div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Pengguna
+                </p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalUsers }}</p>
+            </div>
+        </div>
+        <div
+            class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                style="background: rgba(99,102,241,0.12);">
+                <i class="fas fa-user-shield text-indigo-500 text-lg"></i>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Admin</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $adminCount }}</p>
+            </div>
+        </div>
+        <div
+            class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                style="background: rgba(245,158,11,0.12);">
+                <i class="fas fa-cash-register text-amber-500 text-lg"></i>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kasir</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $kasirCount }}</p>
             </div>
         </div>
     </div>
 
-    <script>
-        function confirmDelete(userId) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('delete-form-' + userId).submit();
-                }
-            });
-        }
-    </script>
+    {{-- User Table --}}
+    <div
+        class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
+        <div
+            class="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
+            <div class="flex items-center gap-2 flex-1">
+                <i class="fas fa-users text-emerald-500"></i>
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white">Daftar Pengguna</h3>
+                <span class="badge badge-green">{{ $totalUsers }} pengguna</span>
+            </div>
+            <form method="GET" action="{{ route('users.index') }}" class="flex gap-2">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pengguna..."
+                        class="form-input pl-8 py-2 text-xs w-44">
+                </div>
+                <button type="submit" class="btn-secondary py-2 px-3 text-xs"><i class="fas fa-search"></i></button>
+                @if(request('search'))
+                    <a href="{{ route('users.index') }}" class="btn-secondary py-2 px-3 text-xs"><i
+                            class="fas fa-times"></i></a>
+                @endif
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50/80 dark:bg-gray-700/30">
+                        <th
+                            class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Pengguna</th>
+                        <th
+                            class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">
+                            Email</th>
+                        <th
+                            class="px-5 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Role</th>
+                        <th
+                            class="px-5 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Bergabung</th>
+                        <th
+                            class="px-5 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
+                    @forelse ($users as $user)
+                        @php
+                            $colors = ['#0d9373', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#f97316'];
+                            $color = $colors[$loop->index % count($colors)];
+                        @endphp
+                        <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors"
+                            id="user-row-{{ $user->id }}">
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                                        style="background: {{ $color }};">
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-800 dark:text-white text-sm">{{ $user->name }}</p>
+                                        <p class="text-xs text-gray-400 sm:hidden">{{ $user->email }}</p>
+                                        @if($user->id === auth()->id())
+                                            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                                <i class="fas fa-circle text-[6px]"></i> Anda
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 text-xs text-gray-500 dark:text-gray-400 hidden sm:table-cell">
+                                {{ $user->email }}</td>
+                            <td class="px-5 py-3.5 text-center">
+                                @if($user->role === 'admin')
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold"
+                                        style="background: rgba(99,102,241,0.1); color: #6366f1;">
+                                        <i class="fas fa-user-shield text-[10px]"></i> Admin
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold"
+                                        style="background: rgba(245,158,11,0.1); color: #d97706;">
+                                        <i class="fas fa-cash-register text-[10px]"></i> Kasir
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-5 py-3.5 text-center text-xs text-gray-400">{{ $user->created_at->format('d M Y') }}
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button
+                                        onclick="openEditModal({{ $user->id }}, {{ json_encode(['name' => $user->name, 'email' => $user->email, 'role' => $user->role]) }})"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                                        title="Edit">
+                                        <i class="fas fa-edit text-xs"></i>
+                                    </button>
+                                    @if($user->id !== auth()->id())
+                                        <button onclick="deleteUser({{ $user->id }}, '{{ addslashes($user->name) }}')"
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                            title="Hapus">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    @else
+                                        <div class="w-8 h-8 flex items-center justify-center text-gray-300"
+                                            title="Tidak bisa hapus akun sendiri">
+                                            <i class="fas fa-ban text-xs"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-5 py-10 text-center text-gray-400">
+                                <i class="fas fa-users text-3xl mb-2 block opacity-20"></i>
+                                <p class="text-sm">Tidak ada pengguna ditemukan</p>
+                                @if(request('search'))
+                                    <a href="{{ route('users.index') }}"
+                                        class="text-emerald-500 text-xs mt-1 inline-block hover:underline">Hapus filter</a>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($users->hasPages())
+            <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
+                {{ $users->appends(request()->query())->links('vendor.tailwind') }}
+            </div>
+        @endif
+    </div>
+
+    {{-- ══════════════════════ MODAL CREATE ══════════════════════ --}}
+    <div id="createModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeCreateModal()"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-200 scale-95 opacity-0"
+            id="createModalBox">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700/50"
+                style="background: linear-gradient(135deg, #0d9373 0%, #065f46 100%); border-radius: 1rem 1rem 0 0;">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-user-plus text-white"></i>
+                    </div>
+                    <h2 class="text-base font-bold text-white">Tambah Pengguna Baru</h2>
+                </div>
+                <button onclick="closeCreateModal()"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+                    <i class="fas fa-times text-white/80"></i>
+                </button>
+            </div>
+            <form onsubmit="submitCreate(event)" class="p-6 space-y-4">
+                <div id="createErrors" class="hidden p-3 rounded-xl text-xs" style="background:#fee2e2;color:#991b1b;">
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Nama
+                        *</label>
+                    <div class="relative"><i
+                            class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                        <input type="text" id="cName" required placeholder="Nama lengkap" class="form-input pl-9">
+                    </div>
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Email
+                        *</label>
+                    <div class="relative"><i
+                            class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                        <input type="email" id="cEmail" required placeholder="user@email.com" class="form-input pl-9">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Password
+                            *</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                            <input type="password" id="cPassword" required placeholder="Min. 8 karakter"
+                                class="form-input pl-9 pr-9">
+                            <button type="button" onclick="togglePwd('cPassword','cPwdIcon')"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-eye text-xs" id="cPwdIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Konfirmasi
+                            *</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                            <input type="password" id="cPasswordConfirm" required placeholder="Ulangi password"
+                                class="form-input pl-9">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Role
+                        *</label>
+                    <div class="grid grid-cols-2 gap-2" id="cRoleSelector">
+                        <label class="role-card cursor-pointer">
+                            <input type="radio" name="cRole" value="admin" class="sr-only">
+                            <div
+                                class="role-opt flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 hover:border-indigo-400 transition-all text-center">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background: rgba(99,102,241,0.12);">
+                                    <i class="fas fa-user-shield text-indigo-500 text-sm"></i>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Admin</span>
+                            </div>
+                        </label>
+                        <label class="role-card cursor-pointer">
+                            <input type="radio" name="cRole" value="kasir" class="sr-only" checked>
+                            <div
+                                class="role-opt flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 hover:border-amber-400 transition-all text-center">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background: rgba(245,158,11,0.12);">
+                                    <i class="fas fa-cash-register text-amber-500 text-sm"></i>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Kasir</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="button" onclick="closeCreateModal()" class="btn-secondary flex-1">Batal</button>
+                    <button type="submit" id="cSubmitBtn" class="btn-primary flex-1"><i class="fas fa-save"></i>
+                        Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ══════════════════════ MODAL EDIT ══════════════════════ --}}
+    <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeEditModal()"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-200 scale-95 opacity-0"
+            id="editModalBox">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center"
+                        style="background: rgba(99,102,241,0.12);">
+                        <i class="fas fa-user-edit text-indigo-500"></i>
+                    </div>
+                    <h2 class="text-base font-bold text-gray-900 dark:text-white">Edit Pengguna</h2>
+                </div>
+                <button onclick="closeEditModal()"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-times text-gray-400"></i>
+                </button>
+            </div>
+            <form onsubmit="submitEdit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="eId">
+                <div id="editErrors" class="hidden p-3 rounded-xl text-xs" style="background:#fee2e2;color:#991b1b;"></div>
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Nama
+                        *</label>
+                    <div class="relative"><i
+                            class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                        <input type="text" id="eName" required class="form-input pl-9">
+                    </div>
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Email
+                        *</label>
+                    <div class="relative"><i
+                            class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                        <input type="email" id="eEmail" required class="form-input pl-9">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Password
+                            Baru <span class="text-gray-400 normal-case">(opsional)</span></label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                            <input type="password" id="ePassword" placeholder="Kosongkan jika tidak diubah"
+                                class="form-input pl-9 pr-9">
+                            <button type="button" onclick="togglePwd('ePassword','ePwdIcon')"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-eye text-xs" id="ePwdIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Konfirmasi</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
+                            <input type="password" id="ePasswordConfirm" class="form-input pl-9">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Role
+                        *</label>
+                    <div class="grid grid-cols-2 gap-2" id="eRoleSelector">
+                        <label class="role-card cursor-pointer">
+                            <input type="radio" name="eRole" value="admin" class="sr-only">
+                            <div
+                                class="role-opt flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 hover:border-indigo-400 transition-all text-center">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background: rgba(99,102,241,0.12);">
+                                    <i class="fas fa-user-shield text-indigo-500 text-sm"></i>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Admin</span>
+                            </div>
+                        </label>
+                        <label class="role-card cursor-pointer">
+                            <input type="radio" name="eRole" value="kasir" class="sr-only">
+                            <div
+                                class="role-opt flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 hover:border-amber-400 transition-all text-center">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background: rgba(245,158,11,0.12);">
+                                    <i class="fas fa-cash-register text-amber-500 text-sm"></i>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Kasir</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="button" onclick="closeEditModal()" class="btn-secondary flex-1">Batal</button>
+                    <button type="submit" id="eSubmitBtn" class="btn-primary flex-1"><i class="fas fa-save"></i>
+                        Perbarui</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @push('styles')
+        <style>
+            .role-card input:checked+.role-opt {
+                border-color: #0d9373;
+                background: rgba(13, 147, 115, 0.05);
+                box-shadow: 0 0 0 3px rgba(13, 147, 115, 0.15);
+            }
+        </style>
+    @endpush
+
+    @push('scripts')
+        <script>
+            const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+            function showModal(m, b) { m.classList.remove('hidden'); requestAnimationFrame(() => { b.classList.remove('scale-95', 'opacity-0'); b.classList.add('scale-100', 'opacity-100'); }); document.body.style.overflow = 'hidden'; }
+            function hideModal(m, b) { b.classList.remove('scale-100', 'opacity-100'); b.classList.add('scale-95', 'opacity-0'); setTimeout(() => { m.classList.add('hidden'); document.body.style.overflow = ''; }, 200); }
+            function showToast(msg, type = 'success') { const c = type === 'success' ? 'background:#d1fae5;color:#065f46;border:1px solid #a7f3d0' : 'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5'; const t = document.createElement('div'); t.style.cssText = `position:fixed;top:1.2rem;right:1.2rem;z-index:9999;padding:.75rem 1.1rem;border-radius:.75rem;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:.5rem;box-shadow:0 8px 24px rgba(0,0,0,.12);${c}`; t.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>${msg}`; document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 3000); }
+            async function apiCall(url, method, body) { const res = await fetch(url, { method, headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }); const data = await res.json(); return { ok: res.ok, data }; }
+
+            function togglePwd(fieldId, iconId) { const f = document.getElementById(fieldId); const i = document.getElementById(iconId); const isText = f.type === 'text'; f.type = isText ? 'password' : 'text'; i.classList.toggle('fa-eye', isText); i.classList.toggle('fa-eye-slash', !isText); }
+
+            function initRoleCards(prefix) { document.querySelectorAll(`[name="${prefix}Role"]`).forEach(radio => { radio.addEventListener('change', function () { document.querySelectorAll(`[name="${prefix}Role"] + .role-opt`).forEach(opt => { opt.style.borderColor = ''; opt.style.background = ''; opt.style.boxShadow = ''; }); if (this.checked) { const opt = this.nextElementSibling; opt.style.borderColor = '#0d9373'; opt.style.background = 'rgba(13,147,115,0.05)'; opt.style.boxShadow = '0 0 0 3px rgba(13,147,115,0.15)'; } }); if (radio.checked) radio.dispatchEvent(new Event('change')); }); }
+
+            function openCreateModal() { ['cName', 'cEmail', 'cPassword', 'cPasswordConfirm'].forEach(id => document.getElementById(id).value = ''); document.querySelector('[name="cRole"][value="kasir"]').checked = true; document.getElementById('createErrors').classList.add('hidden'); showModal(document.getElementById('createModal'), document.getElementById('createModalBox')); initRoleCards('c'); setTimeout(() => document.getElementById('cName').focus(), 250); }
+            function closeCreateModal() { hideModal(document.getElementById('createModal'), document.getElementById('createModalBox')); }
+            async function submitCreate(e) { e.preventDefault(); const btn = document.getElementById('cSubmitBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...'; const errEl = document.getElementById('createErrors'); errEl.classList.add('hidden'); const role = document.querySelector('[name="cRole"]:checked')?.value || 'kasir'; const { ok, data } = await apiCall('{{ route("users.store") }}', 'POST', { name: document.getElementById('cName').value, email: document.getElementById('cEmail').value, password: document.getElementById('cPassword').value, password_confirmation: document.getElementById('cPasswordConfirm').value, role }); if (!ok) { const msgs = data.errors ? Object.values(data.errors).flat() : [data.message || 'Terjadi kesalahan']; errEl.innerHTML = msgs.map(m => `<p>• ${m}</p>`).join(''); errEl.classList.remove('hidden'); } else { closeCreateModal(); showToast('Pengguna berhasil ditambahkan!'); setTimeout(() => location.reload(), 600); } btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan'; }
+
+            function openEditModal(id, d) { document.getElementById('eId').value = id; document.getElementById('eName').value = d.name || ''; document.getElementById('eEmail').value = d.email || ''; document.getElementById('ePassword').value = ''; document.getElementById('ePasswordConfirm').value = ''; const roleRadio = document.querySelector(`[name="eRole"][value="${d.role}"]`); if (roleRadio) { roleRadio.checked = true; } document.getElementById('editErrors').classList.add('hidden'); showModal(document.getElementById('editModal'), document.getElementById('editModalBox')); initRoleCards('e'); setTimeout(() => document.getElementById('eName').focus(), 250); }
+            function closeEditModal() { hideModal(document.getElementById('editModal'), document.getElementById('editModalBox')); }
+            async function submitEdit(e) { e.preventDefault(); const id = document.getElementById('eId').value; const btn = document.getElementById('eSubmitBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...'; const errEl = document.getElementById('editErrors'); errEl.classList.add('hidden'); const role = document.querySelector('[name="eRole"]:checked')?.value || 'kasir'; const pwd = document.getElementById('ePassword').value; const body = { name: document.getElementById('eName').value, email: document.getElementById('eEmail').value, role }; if (pwd) { body.password = pwd; body.password_confirmation = document.getElementById('ePasswordConfirm').value; } const { ok, data } = await apiCall(`/users/${id}`, 'PUT', body); if (!ok) { const msgs = data.errors ? Object.values(data.errors).flat() : [data.message || 'Terjadi kesalahan']; errEl.innerHTML = msgs.map(m => `<p>• ${m}</p>`).join(''); errEl.classList.remove('hidden'); } else { closeEditModal(); showToast('Pengguna berhasil diperbarui!'); setTimeout(() => location.reload(), 600); } btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Perbarui'; }
+
+            async function deleteUser(id, name) { const r = await Swal.fire({ title: `Hapus "${name}"?`, html: `Pengguna <strong>${name}</strong> akan dihapus secara permanen.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', confirmButtonText: '<i class="fas fa-trash mr-1"></i> Ya, Hapus!', cancelButtonText: 'Batal', customClass: { confirmButton: 'rounded-xl', cancelButton: 'rounded-xl' } }); if (!r.isConfirmed) return; const { ok, data } = await apiCall(`/users/${id}`, 'DELETE'); if (ok) { const row = document.getElementById(`user-row-${id}`); if (row) { row.style.opacity = '0'; row.style.transition = 'opacity .3s'; setTimeout(() => row.remove(), 300); } showToast('Pengguna berhasil dihapus!'); } else { showToast(data.message || 'Gagal menghapus', 'error'); } }
+
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCreateModal(); closeEditModal(); } });
+        </script>
+    @endpush
+
 @endsection

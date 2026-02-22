@@ -6,63 +6,74 @@ use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
-    // Menampilkan daftar supplier
     public function index()
     {
-        $suppliers = Supplier::all();
+        $suppliers = Supplier::latest()->get();
         return view('suppliers.index', compact('suppliers'));
     }
 
-    // Menampilkan form tambah supplier
     public function create()
     {
-        return view('suppliers.create');
+        return redirect()->route('suppliers.index');
     }
 
-    // Menyimpan supplier baru
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:15',
-            'address' => 'required|string',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
         ]);
 
-        Supplier::create($request->all());
+        $supplier = Supplier::create($validated);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'supplier' => $supplier], 201);
+        }
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan.');
     }
 
-    // Menampilkan detail supplier
     public function show(Supplier $supplier)
     {
         return view('suppliers.show', compact('supplier'));
     }
 
-    // Menampilkan form edit supplier
     public function edit(Supplier $supplier)
     {
-        return view('suppliers.edit', compact('supplier'));
+        if (request()->wantsJson()) {
+            return response()->json($supplier);
+        }
+        return redirect()->route('suppliers.index');
     }
 
-    // Mengupdate supplier
     public function update(Request $request, Supplier $supplier)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:15',
-            'address' => 'required|string',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
         ]);
 
-        $supplier->update($request->all());
+        $supplier->update($validated);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'supplier' => $supplier->fresh()]);
+        }
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil diperbarui.');
     }
 
-    // Menghapus supplier
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus.');
     }
 }

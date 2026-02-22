@@ -28,15 +28,11 @@
         <input type="file" name="image" id="image" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
     </div>
 
-    <!-- Input untuk Ukuran dan Stok -->
+    <!-- Input untuk Ukuran dan Stok (Opsional) -->
     <div class="mb-4">
-        <label for="sizes" class="block text-sm font-medium text-gray-700">Ukuran dan Stok</label>
+        <label for="sizes" class="block text-sm font-medium text-gray-700">Ukuran dan Stok (Opsional)</label>
         <div id="size-container">
-            <div class="flex items-center gap-4 mb-2">
-                <input type="text" name="sizes[0][name]" placeholder="Ukuran (contoh: M)" class="block w-1/2 rounded-md border-gray-300 shadow-sm" required>
-                <input type="number" name="sizes[0][stock]" placeholder="Stok" class="block w-1/2 rounded-md border-gray-300 shadow-sm" required>
-                <button type="button" class="bg-red-500 text-white px-2 py-1 rounded-md remove-size">Hapus</button>
-            </div>
+            <!-- Ukuran dapat ditambahkan dinamis atau dikosongkan -->
         </div>
         <button type="button" id="add-size" class="bg-green-500 text-white px-4 py-2 rounded-md">Tambah Ukuran</button>
     </div>

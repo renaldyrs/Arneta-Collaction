@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Log;
 
 class StoreProfileController extends Controller
 {
-    // Disk yang digunakan untuk penyimpanan
-    protected $disk = 'laravelcloud';
+    // Disk yang digunakan untuk penyimpanan lokal
+    protected $disk = 'public'; // Menggunakan disk public untuk penyimpanan lokal
 
     public function index()
     {
@@ -62,7 +62,7 @@ class StoreProfileController extends Controller
 
             if ($request->hasFile('logo')) {
                 $path = $this->uploadLogo($request->file('logo'));
-                $profile->logo = $path;
+                $profile->logo = $path; // Ini akan menyimpan path relatif (contoh: store-profile/2025/02/logo_1234567890.jpg)
             }
 
             $profile->save();
@@ -85,9 +85,10 @@ class StoreProfileController extends Controller
             'phone' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
         try {
             $profile = StoreProfile::firstOrFail();
-            $oldLogoPath = $profile->logo;
+            $oldLogoPath = $profile->logo; // Ini path relatif
 
             $profile->name = $request->name;
             $profile->address = $request->address;
@@ -96,7 +97,7 @@ class StoreProfileController extends Controller
             if ($request->hasFile('logo')) {
                 $newLogoPath = $this->uploadLogo($request->file('logo'));
                 if ($newLogoPath) {
-                    $profile->logo = $newLogoPath;
+                    $profile->logo = $newLogoPath; // Simpan path relatif baru
                     $this->deleteOldLogo($oldLogoPath);
                 }
             }
@@ -114,53 +115,45 @@ class StoreProfileController extends Controller
         }
     }
 
-
     /**
-     * Upload logo ke cloud storage
+     * Upload logo ke storage lokal (public disk)
      */
     private function uploadLogo($file)
-{
-    try {
-        // Generate nama file unik
-        $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+    {
+        try {
+            // Generate nama file unik
+            $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
 
-        // Path penyimpanan
-        $path = 'store-profile/' . date('Y/m') . '/' . $filename;
+            // Path penyimpanan dengan struktur folder
+            $path = 'store-profile/' . date('Y/m') . '/' . $filename;
 
-        // Upload file ke S3
-        Storage::disk($this->disk)->put(
-    $path, 
-    file_get_contents($file),
-    ['visibility' => 'public', 'ACL' => 'public-read']
-);
+            // Upload file ke storage lokal (public disk)
+            // Ini akan menyimpan di storage/app/public/store-profile/...
+            Storage::disk('public')->put($path, file_get_contents($file));
 
+            // Kembalikan path relatif untuk disimpan di database
+            // Path ini akan digunakan dengan asset('storage/' . $path)
+            return $path;
 
-        // Ambil full URL dari S3
-        $url = Storage::disk($this->disk)->url($path);
-
-        // Force URL pakai HTTPS (biar aman untuk <img src>)
-        return str_replace('http://', 'https://', $url);
-
-    } catch (\Exception $e) {
-        Log::error('Logo upload failed: ' . $e->getMessage());
-        return false;
+        } catch (\Exception $e) {
+            Log::error('Logo upload failed: ' . $e->getMessage());
+            return false;
+        }
     }
-}
 
     /**
-     * Hapus logo lama dari storage
+     * Hapus logo lama dari storage lokal
      */
-    private function deleteOldLogo($logoUrl)
+    private function deleteOldLogo($logoPath)
     {
-        if (empty($logoUrl)) {
+        if (empty($logoPath)) {
             return false;
         }
 
         try {
-            $path = $this->extractPathFromUrl($logoUrl);
-            
-            if ($path && Storage::disk($this->disk)->exists($path)) {
-                return Storage::disk($this->disk)->delete($path);
+            // Hapus file dari storage lokal jika ada
+            if (Storage::disk('public')->exists($logoPath)) {
+                return Storage::disk('public')->delete($logoPath);
             }
             
             return false;
@@ -168,30 +161,5 @@ class StoreProfileController extends Controller
             Log::error('Failed to delete old logo: ' . $e->getMessage());
             return false;
         }
-    }
-
-    /**
-     * Ekstrak path dari URL
-     */
-    private function extractPathFromUrl($url)
-    {
-        try {
-            if (filter_var($url, FILTER_VALIDATE_URL)) {
-                $baseUrl = rtrim(Storage::disk($this->disk)->url(''), '/');
-                $parsedUrl = parse_url($url);
-                $parsedBase = parse_url($baseUrl);
-
-                // Memastikan host dan path awal sama
-                if (isset($parsedUrl['host'], $parsedBase['host']) &&
-                    $parsedUrl['host'] === $parsedBase['host'] &&
-                    strpos($parsedUrl['path'], $parsedBase['path']) === 0) {
-                    return ltrim(substr($parsedUrl['path'], strlen($parsedBase['path'])), '/');
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('Path extraction failed: ' . $e->getMessage());
-        }
-
-        return null;
     }
 }

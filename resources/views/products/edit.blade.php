@@ -94,28 +94,14 @@
                         @foreach ($product->sizes as $index => $size)
                             <div class="flex items-center gap-4 mb-2">
                                 <input type="text" name="sizes[{{ $index }}][name]" value="{{ $size->name }}"
-                                    placeholder="Ukuran (contoh: M)" class="block w-1/2 rounded-md border-gray-300 shadow-sm" required>
+                                    placeholder="Ukuran (contoh: M)" class="block w-1/2 rounded-md border-gray-300 shadow-sm">
                                 <input type="number" name="sizes[{{ $index }}][stock]" value="{{ $size->pivot->stock }}"
-                                    placeholder="Stok" class="block w-1/2 rounded-md border-gray-300 shadow-sm" required>
+                                    placeholder="Stok" class="block w-1/2 rounded-md border-gray-300 shadow-sm">
                                 <button type="button" class="bg-red-500 text-white px-2 py-1 rounded-md remove-size">Hapus</button>
                             </div>
                         @endforeach
                     </div>
                     <button type="button" id="add-size" class="bg-green-500 text-white px-4 py-2 rounded-md">Tambah Ukuran</button>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Ukuran dan Stok</label>
-                    <div class="mt-2 space-y-2">
-                        @foreach($sizes as $size)
-                            <div class="flex items-center">
-                                <input type="checkbox" name="sizes[]" value="{{ $size->id }}" class="mr-2">
-                                <span class="mr-4">{{ $size->name }}</span>
-                                <input type="number" name="stock_{{ $size->id }}" placeholder="Stok" min="0"
-                                    class="w-20 px-2 py-1 border rounded">
-                            </div>
-                        @endforeach
-                    </div>
                 </div>
 
                 <!-- Tombol Aksi -->

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\PaymentMethod;
 use App\Models\Expense;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -19,12 +20,12 @@ class ReportController extends Controller
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
         $transactions = Transaction::with(['details.product', 'paymentMethod'])
-            ->whereBetween('created_at', [$startDate, $endDate.' 23:59:59'])
+            ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-            $transactionstotal = Transaction::with(['details.product', 'paymentMethod'])
-            ->whereBetween('created_at', [$startDate, $endDate.' 23:59:59'])
+        $transactionstotal = Transaction::with(['details.product', 'paymentMethod'])
+            ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -47,7 +48,7 @@ class ReportController extends Controller
     private function getMostSoldProduct($transactions)
     {
         $products = [];
-        
+
         foreach ($transactions as $transaction) {
             foreach ($transaction->details as $detail) {
                 $productId = $detail->product_id;
@@ -73,30 +74,30 @@ class ReportController extends Controller
         // Default tanggal (bulan ini)
         $startDate = $request->start_date ?? Carbon::now()->startOfMonth()->format('Y-m-d');
         $endDate = $request->end_date ?? Carbon::now()->endOfMonth()->format('Y-m-d');
-        
+
         // Query transaksi dengan filter
         $transactions = Transaction::with(['paymentMethod', 'user'])
             ->whereBetween('created_at', [$startDate, $endDate])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-           
+
         $transactionstotal = Transaction::with(['paymentMethod', 'user'])
             ->whereBetween('created_at', [$startDate, $endDate])
             ->orderBy('created_at', 'desc')
             ->get();
         // Hitung total pendapatan
         $totalIncome = $transactionstotal->sum('total_amount');
-        
+
         // Group by payment method
-        $paymentMethodSummary = $transactionstotal->groupBy('payment_method_id')->map(function($items, $key) {
+        $paymentMethodSummary = $transactionstotal->groupBy('payment_method_id')->map(function ($items, $key) {
             return [
                 'name' => $items->first()->paymentMethod->name,
                 'count' => $items->count(),
                 'total' => $items->sum('total_amount')
             ];
         });
-        
-        
+
+
         return view('reports.financial', compact(
             'transactions',
             'totalIncome',
@@ -114,7 +115,7 @@ class ReportController extends Controller
 
         foreach ($period as $date) {
             $chartLabels[] = $date->format('d M');
-            
+
             $income = Transaction::whereDate('created_at', $date)
                 ->sum('total_amount');
             $chartIncome[] = $income;
@@ -138,29 +139,29 @@ class ReportController extends Controller
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $status = $request->input('status', 'all');
         $customerId = $request->input('customer_id');
-        
+
         // Query dasar
         $query = Transaction::with(['customer', 'items.product'])
             ->whereBetween('order_date', [$startDate, $endDate]);
-        
+
         // Filter status
         if ($status !== 'all') {
             $query->where('status', $status);
         }
-        
+
         // Filter pelanggan
         if ($customerId) {
             $query->where('customer_id', $customerId);
         }
-        
+
         $orders = $query->orderBy('order_date', 'desc')->get();
         $customers = Customer::orderBy('name')->get();
-        
+
         // Hitung statistik
         $totalOrders = $orders->count();
         $totalRevenue = $orders->sum('total_amount');
         $completedOrders = $orders->where('status', 'completed')->count();
-        
+
         return view('reports.orders', compact(
             'orders',
             'customers',
@@ -173,7 +174,7 @@ class ReportController extends Controller
             'completedOrders'
         ));
     }
-    
+
     public function exportOrders(Request $request)
     {
         // Validasi
@@ -182,15 +183,92 @@ class ReportController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'export_format' => 'required|in:pdf,excel'
         ]);
-        
+
         // Parameter filter sama dengan method orders()
         $params = $request->only(['start_date', 'end_date', 'status', 'customer_id']);
-        
+
         if ($request->export_format === 'pdf') {
             return $this->exportPDF($params);
         }
-        
+
         return $this->exportExcel($params);
+    }
+
+    /**
+     * Export laporan pesanan (transaksi) ke CSV
+     */
+    public function exportCsv(Request $request)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+
+        $transactions = Transaction::with(['details.product', 'paymentMethod', 'customer', 'user'])
+            ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $filename = 'laporan_pesanan_' . $startDate . '_' . $endDate . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($transactions, $startDate, $endDate) {
+            $handle = fopen('php://output', 'w');
+            // BOM agar Excel membaca UTF-8 dengan benar
+            fputs($handle, "\xEF\xBB\xBF");
+
+            // Judul & periode
+            fputcsv($handle, ['LAPORAN PESANAN / TRANSAKSI']);
+            fputcsv($handle, ['Periode', $startDate . ' s/d ' . $endDate]);
+            fputcsv($handle, ['Diekspor pada', now()->format('d/m/Y H:i')]);
+            fputcsv($handle, []);
+
+            // Ringkasan
+            $totalRevenue = $transactions->sum('total_amount');
+            $totalTransactions = $transactions->count();
+            fputcsv($handle, ['--- RINGKASAN ---']);
+            fputcsv($handle, ['Total Transaksi', $totalTransactions]);
+            fputcsv($handle, ['Total Pendapatan', number_format($totalRevenue, 2, '.', '')]);
+            fputcsv($handle, []);
+
+            // Header tabel
+            fputcsv($handle, [
+                'No. Invoice',
+                'Tanggal',
+                'Kasir',
+                'Pelanggan',
+                'Produk',
+                'Qty',
+                'Metode Bayar',
+                'Total',
+                'Uang Bayar',
+                'Kembalian',
+            ]);
+
+            foreach ($transactions as $trx) {
+                $items = $trx->details->map(fn($d) => $d->product->name . ' x' . $d->quantity)->implode(', ');
+                $totalQty = $trx->details->sum('quantity');
+
+                fputcsv($handle, [
+                    $trx->invoice_number,
+                    $trx->created_at->format('d/m/Y H:i'),
+                    $trx->user->name ?? '-',
+                    $trx->customer->name ?? 'Umum',
+                    $items,
+                    $totalQty,
+                    $trx->paymentMethod->name ?? '-',
+                    number_format($trx->total_amount, 2, '.', ''),
+                    number_format($trx->payment_amount, 2, '.', ''),
+                    number_format($trx->change_amount, 2, '.', ''),
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
 }

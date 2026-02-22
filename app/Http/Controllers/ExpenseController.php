@@ -1,6 +1,5 @@
 <?php
 
-// app/Http/Controllers/ExpenseController.php
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
@@ -12,34 +11,43 @@ class ExpenseController extends Controller
     {
         $expenses = Expense::latest()->paginate(10);
         $totalExpenses = Expense::sum('amount');
-        $categories = Expense::select('category')->distinct()->pluck('category');
-        
+        $categories = ['Bahan Baku', 'Operasional', 'Gaji', 'Lainnya'];
+
         return view('expense.index', compact('expenses', 'totalExpenses', 'categories'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'date' => 'required|date',
             'amount' => 'required|numeric|min:0',
             'category' => 'required|string|max:50',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
-        Expense::create([
-            'date' => $request->date,
-            'amount' => $request->amount,
-            'category' => $request->category,
-            'description' => $request->description,
-            'user_id' => auth()->id()
+        $expense = Expense::create([
+            'date' => $validated['date'],
+            'amount' => $validated['amount'],
+            'category' => $validated['category'],
+            'description' => $validated['description'] ?? null,
+            'user_id' => auth()->id(),
         ]);
 
-        return back()->with('success', 'Pengeluaran berhasil dicatat');
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'expense' => $expense], 201);
+        }
+
+        return back()->with('success', 'Pengeluaran berhasil dicatat.');
     }
 
     public function destroy(Expense $expense)
     {
         $expense->delete();
-        return back()->with('success', 'Pengeluaran berhasil dihapus');
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back()->with('success', 'Pengeluaran berhasil dihapus.');
     }
 }

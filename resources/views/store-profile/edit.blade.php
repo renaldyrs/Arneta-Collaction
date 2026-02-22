@@ -1,80 +1,71 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-extrabold mb-8 text-center text-gray-800 dark:text-white">Edit Profil Toko</h1>
+<div class="container mx-auto p-4">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold mb-4">Edit Profil Toko</h2>
+        
+        <form action="{{ route('store-profile.update') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
 
-        <div class="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 space-y-6">
-
-            <form action="{{ route('store-profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                @csrf
-                @method('PUT')
-
-                <!-- Logo Preview -->
-                <div class="flex flex-col items-center">
+            <!-- Logo Preview -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Logo Toko</label>
+                <div class="flex items-center space-x-4">
                     @php
                         $logoUrl = !empty($profile->logo) ? $profile->logo : asset('images/default-logo.png');
                     @endphp
-
-                    <img 
-                        src="{{ $logoUrl }}" 
-                        alt="Logo Toko" 
-                        id="logo-preview"
-                        class="w-32 h-32 object-cover rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg"
-                        onerror="this.onerror=null;this.src='{{ asset('images/default-logo.png') }}';"
-                    >
+                    <img src="{{ $profile->logo_url }}" alt="Logo {{ $profile->name }}"
+                        class="w-24 h-24 rounded-lg object-cover border border-gray-300">
+                    <div class="flex-1">
+                        <input type="file" name="logo" accept="image/*"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
                 </div>
+            </div>
 
-                <!-- Logo Upload -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Logo Baru</label>
-                    <input type="file" name="logo" accept="image/*"
-                        class="block w-full text-sm text-gray-900 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
+            <!-- Nama Toko -->
+            <div class="mb-4">
+                <label for="name" class="block text-sm font-medium text-gray-700">Nama Toko</label>
+                <input type="text" name="name" id="name" value="{{ old('name', $profile->name) }}"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                @error('name')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-                <!-- Nama -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Toko</label>
-                    <input type="text" name="name" value="{{ old('name', $profile->name) }}"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
+            <!-- Alamat -->
+            <div class="mb-4">
+                <label for="address" class="block text-sm font-medium text-gray-700">Alamat</label>
+                <textarea name="address" id="address" rows="3"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>{{ old('address', $profile->address) }}</textarea>
+                @error('address')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-                <!-- Alamat -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat</label>
-                    <textarea name="address" rows="3"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" required>{{ old('address', $profile->address) }}</textarea>
-                </div>
+            <!-- Telepon -->
+            <div class="mb-4">
+                <label for="phone" class="block text-sm font-medium text-gray-700">Telepon</label>
+                <input type="text" name="phone" id="phone" value="{{ old('phone', $profile->phone) }}"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                @error('phone')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-                <!-- Telepon -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telepon</label>
-                    <input type="text" name="phone" value="{{ old('phone', $profile->phone) }}"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-
-                <!-- Tombol -->
-                <div class="flex justify-center pt-4">
-                    <button type="submit"
-                        class="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-md transition duration-200">
-                        <i class="fas fa-save mr-2"></i> Simpan Perubahan
-                    </button>
-                </div>
-
-            </form>
-        </div>
+            <!-- Tombol Aksi -->
+            <div class="flex justify-end">
+                <a href="{{ route('store-profile.index') }}"
+                    class="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-gray-600 transition">
+                    Batal
+                </a>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-save"></i> Simpan
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 @endsection
-
-@push('scripts')
-<script>
-    // Preview logo baru sebelum upload
-    document.querySelector('input[name="logo"]').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('logo-preview').src = e.target.result;
-        }
-        reader.readAsDataURL(e.target.files[0]);
-    });
-</script>
-@endpush

@@ -19,6 +19,8 @@ class ProductController extends Controller
     $search = $request->input('search');
     
     $query = Product::with('category');
+
+    
     
     if ($search) {
         $query->where(function($q) use ($search) {
@@ -38,10 +40,11 @@ class ProductController extends Controller
     
     $products = $query->paginate(5);
     $categories = Category::all();
-    
+    $suppliers = Supplier::all();
     return view('products.index', compact(
         'products',
         'categories',
+        'suppliers',
         'totalProducts',
         'inStockProducts',
         'lowStockProducts',
@@ -67,6 +70,7 @@ class ProductController extends Controller
             'stock' => 'required|integer',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'sizes' => 'nullable|array',
             'sizes.*.name' => 'required|string|max:255',
@@ -90,6 +94,7 @@ class ProductController extends Controller
             'stock' => $request->stock,
             'description' => $request->description,
             'category_id' => $request->category_id,
+            'supplier_id' => $request->supplier_id,
             'image' => $imagePath,
         ]);
 

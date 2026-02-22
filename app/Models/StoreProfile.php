@@ -16,4 +16,19 @@ class StoreProfile extends Model
         'phone',
         'logo',
     ];
+
+    public function getLogoUrlAttribute()
+    {
+        if (empty($this->logo)) {
+            return asset('images/default-logo.png');
+        }
+
+        // Jika sudah URL lengkap
+        if (filter_var($this->logo, FILTER_VALIDATE_URL)) {
+            return $this->logo;
+        }
+
+        // Jika path relatif dari storage
+        return asset('storage/' . $this->logo);
+    }
 }

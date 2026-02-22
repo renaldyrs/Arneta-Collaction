@@ -5,8 +5,8 @@
             <i class="fas fa-bars text-xl"></i>
         </button>
         <div class="hidden md:flex items-center">
-            <i class="fas fa-store text-xl text-primary-600 dark:text-primary-400 mr-2"></i>
-            <span class="text-xl font-bold text-gray-800 dark:text-white">Arneta Collection</span>
+            
+            
         </div>
     </div>
 

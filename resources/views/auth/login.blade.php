@@ -250,13 +250,13 @@
                 <i class="fas fa-arrow-right ml-2 text-sm"></i>
             </button>
 
-            @if(Route::has('register'))
+            <!-- @if(Route::has('register'))
             <div class="login-divider"></div>
             <p class="text-center" style="font-size:0.8rem; color: rgba(255,255,255,0.35);">
                 Belum punya akun?
                 <a href="{{ route('register') }}" style="color: #2dd4aa;" class="font-semibold hover:underline ml-1">Daftar</a>
             </p>
-            @endif
+            @endif -->
         </form>
     </div>
 

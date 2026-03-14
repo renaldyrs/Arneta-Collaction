@@ -11,7 +11,7 @@
                     <span id="realtimeLabel">Live</span>
                 </span>
             </h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ now()->translatedFormat('l, d F Y') }} Â· Selamat
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ now()->translatedFormat('l, d F Y') }} Selamat
                 datang, <span class="font-semibold text-gray-700 dark:text-gray-300">{{ Auth::user()->name }}</span></p>
         </div>
         <a href="{{ route('cashier.index') }}"
@@ -106,7 +106,7 @@
                 </p>
                 <div class="flex items-center gap-1 mt-2">
                     <span class="text-xs font-semibold {{ $profit >= 0 ? 'text-white/90' : 'text-red-200' }} bg-white/20 px-2 py-0.5 rounded-full">
-                        {{ $profit >= 0 ? 'âœ“ Laba' : 'â†“ Rugi' }}
+                        {{ $profit >= 0 ? ' Laba' : ' Rugi' }}
                     </span>
                     <span class="text-white/50 text-xs">bulan ini</span>
                 </div>
@@ -180,7 +180,7 @@
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
                 <h3 class="text-sm font-bold text-gray-800 dark:text-white">Produk Terlaris</h3>
                 <a href="{{ route('reports.index') }}" class="text-xs text-emerald-600 hover:underline font-medium">Lihat
-                    Laporan â†’</a>
+                    Laporan</a>
             </div>
             <div class="divide-y divide-gray-50 dark:divide-gray-700/50">
                 @forelse($bestSellers ?? [] as $i => $item)

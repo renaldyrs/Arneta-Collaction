@@ -100,6 +100,9 @@
                             class="px-5 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Harga</th>
                         <th
+                            class="px-5 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Cost</th>
+                        <th
                             class="px-5 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Stok</th>
                         <th
@@ -145,6 +148,9 @@
                                 <span class="font-semibold text-gray-800 dark:text-white">Rp
                                     {{ number_format($product->price, 0, ',', '.') }}</span>
                             </td>
+                            <td class="px-5 py-3.5 text-right">
+                                <span class="text-sm text-gray-600">Rp {{ number_format($product->cost ?? 0, 0, ',', '.') }}</span>
+                            </td>
                             <td class="px-5 py-3.5 text-center">
                                 <span
                                     class="font-bold {{ $product->stock <= 0 ? 'text-red-500' : ($product->stock <= 10 ? 'text-amber-500' : 'text-gray-800 dark:text-white') }}">
@@ -163,7 +169,7 @@
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <button
-                                        onclick="openEditModal({{ $product->id }}, {{ json_encode(['name' => $product->name, 'price' => $product->price, 'stock' => $product->stock, 'category_id' => $product->category_id, 'description' => $product->description, 'image' => $product->image]) }})"
+                                        onclick="openEditModal({{ $product->id }}, {{ json_encode(['name' => $product->name, 'price' => $product->price, 'cost' => $product->cost, 'stock' => $product->stock, 'category_id' => $product->category_id, 'description' => $product->description, 'image' => $product->image]) }})"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
                                         title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
@@ -223,7 +229,7 @@
                                 Produk *</label>
                             <input type="text" name="name" value="{{ old('name') }}" required class="form-input">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <div>
                                 <label
                                     class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Harga
@@ -240,6 +246,16 @@
                                     class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Stok
                                     *</label>
                                 <input type="number" name="stock" value="{{ old('stock') }}" required class="form-input">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Cost
+                                    (Harga Pokok)</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-semibold">Rp</span>
+                                    <input type="number" step="0.01" name="cost" value="{{ old('cost') }}" class="form-input pl-9">
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -336,7 +352,7 @@
                             Produk *</label>
                         <input type="text" id="eProdName" required class="form-input">
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-4">
                         <div>
                             <label
                                 class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Harga
@@ -352,6 +368,16 @@
                                 class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Stok
                                 *</label>
                             <input type="number" id="eProdStock" required class="form-input">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">Cost
+                                (Harga Pokok)</label>
+                            <div class="relative">
+                                <span
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-semibold">Rp</span>
+                                <input type="number" step="0.01" id="eProdCost" class="form-input pl-9">
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -453,6 +479,7 @@
             document.getElementById('eProdId').value = id;
             document.getElementById('eProdName').value = d.name || '';
             document.getElementById('eProdPrice').value = d.price || '';
+            document.getElementById('eProdCost').value = d.cost || '';
             document.getElementById('eProdStock').value = d.stock || '';
             document.getElementById('eProdCategory').value = d.category_id || '';
             document.getElementById('eProdDesc').value = d.description || '';
@@ -490,6 +517,7 @@
             fd.append('description', document.getElementById('eProdDesc').value || '');
             const imgFile = document.getElementById('eProdImage').files[0];
             if (imgFile) fd.append('image', imgFile);
+            fd.append('cost', document.getElementById('eProdCost').value || '0');
             const res = await fetch(`/products/${id}`, { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }, body: fd });
             const data = await res.json();
             if (!res.ok) {

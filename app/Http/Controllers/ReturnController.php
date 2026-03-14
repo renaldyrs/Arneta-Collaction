@@ -76,9 +76,18 @@ class ReturnController extends Controller
         $product->stock += $return->quantity;
         $product->save();
 
+        // Pencatatan Pengeluaran Otomatis (Refund)
+        \App\Models\Expense::create([
+            'date' => now()->format('Y-m-d'),
+            'amount' => $return->total_refund,
+            'category' => 'Refund / Retur',
+            'description' => 'Pengembalian dana untuk retur ' . $return->return_number . ' (Kpd: ' . ($return->transaction->customer->name ?? 'Umum') . ')',
+            'user_id' => auth()->id() ?? 1 // Fallback in case auth is not fully configured in terminal
+        ]);
+
         $return->update(['status' => 'approved']);
 
-        return back()->with('success', 'Retur disetujui dan stok diperbarui');
+        return back()->with('success', 'Retur disetujui, stok diperbarui, dan dana pengembalian dicatat otomatis sebagai pengeluaran.');
     }
 
     public function reject($id)

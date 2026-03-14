@@ -14,6 +14,7 @@ class Product extends Model
         'code',
         'name',
         'price',
+        'cost',
         'stock',
         'low_stock_threshold',
         'description',
@@ -25,6 +26,7 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'cost' => 'decimal:2',
     ];
 
     // Relasi ke Category

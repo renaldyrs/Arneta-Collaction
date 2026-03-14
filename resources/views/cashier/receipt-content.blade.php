@@ -44,10 +44,11 @@
 
     <!-- Total -->
     <div class="mb-4 border-b border-gray-300 dark:border-gray-600 pb-3">
+        @php $receiptSubtotal = $transaction->details->sum('subtotal'); @endphp
         <div class="flex justify-between text-sm">
             <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
             <span class="font-medium text-gray-800 dark:text-white">Rp
-                {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+                {{ number_format($receiptSubtotal, 0, ',', '.') }}</span>
         </div>
         <div class="flex justify-between text-sm">
             <span class="text-gray-600 dark:text-gray-400">Diskon</span>
@@ -82,18 +83,11 @@
 
     <!-- Footer -->
     <div class="text-center text-xs text-gray-500 dark:text-gray-400">
-        <p class="font-bold text-gray-700 dark:text-gray-300 tracking-wider">★ TERIMA KASIH ★</p>
-        <p class="mt-1">Atas kepercayaan Anda berbelanja di</p>
-        <p class="font-semibold text-gray-700 dark:text-gray-300">{{ $storeProfile->name ?? 'Toko Kami' }}</p>
-        <div class="border-t border-dashed border-gray-300 dark:border-gray-600 mt-2 pt-2">
+        <p class="font-bold text-gray-700 dark:text-gray-300 tracking-wider">Terima Kasih</p>
             <p>Barang yang sudah dibeli tidak dapat</p>
             <p>ditukar atau dikembalikan</p>
-        </div>
-        @if(!empty($storeProfile->email))
-            <p class="mt-2">📧 {{ $storeProfile->email }}</p>
-        @endif
         <div class="border-t border-dashed border-gray-300 dark:border-gray-600 mt-2 pt-2">
-            <p style="font-size: 10px;" class="text-gray-400">Dicetak: {{ now()->format('d/m/Y H:i') }}</p>
+           
             <p style="font-size: 10px;" class="text-gray-400 font-semibold mt-0.5">Powered by Arneta POS v2.0</p>
         </div>
     </div>

@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\PaymentMethod;
 use App\Models\Expense;
 use App\Models\Customer;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -85,8 +86,38 @@ class ReportController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->orderBy('created_at', 'desc')
             ->get();
-        // Hitung total pendapatan
-        $totalIncome = $transactionstotal->sum('total_amount');
+        
+        // Hitung metrik pendapatan
+        $totalDiscount = $transactionstotal->sum('discount_amount');
+        $totalNetRevenue = $transactionstotal->sum('total_amount');
+        $totalGrossRevenue = $totalNetRevenue + $totalDiscount; // Gross = Net + Discount
+
+        // Hitung total pengeluaran
+        $totalExpenses = Expense::whereBetween('date', [$startDate, $endDate])->sum('amount');
+        
+        // Hitung laba rugi
+        $netProfit = $totalNetRevenue - $totalExpenses;
+        $marginPercentage = $totalNetRevenue > 0 ? ($netProfit / $totalNetRevenue) * 100 : 0;
+
+        // Nilai persediaan saat ini (stock x cost)
+        $inventoryValue = 0;
+        $productsMissingCost = collect();
+        $products = Product::with('sizes')->get();
+        foreach ($products as $p) {
+            $effectiveStock = 0;
+            if ($p->relationLoaded('sizes') && $p->sizes->count() > 0) {
+                $effectiveStock = $p->sizes->sum('pivot.stock');
+            } else {
+                $effectiveStock = (int) ($p->stock ?? 0);
+            }
+            $unitCost = $p->cost && $p->cost > 0 ? (float) $p->cost : (float) ($p->price * 0.6);
+            $inventoryValue += $effectiveStock * $unitCost;
+            if ((!isset($p->cost) || $p->cost == 0) && $effectiveStock > 0) {
+                $productsMissingCost->push(['id' => $p->id, 'name' => $p->name ?: ('#' . $p->id)]);
+            }
+        }
+        $productsMissingCostCount = $productsMissingCost->count();
+        $productsMissingCostSamples = $productsMissingCost->take(5)->values()->all();
 
         // Group by payment method
         $paymentMethodSummary = $transactionstotal->groupBy('payment_method_id')->map(function ($items, $key) {
@@ -97,11 +128,41 @@ class ReportController extends Controller
             ];
         });
 
+        // Breakdown pengeluaran per kategori
+        $expensesByCategory = Expense::whereBetween('date', [$startDate, $endDate])
+            ->groupBy('category')
+            ->selectRaw('category, SUM(amount) as total, COUNT(*) as count')
+            ->get();
+
+        // Perbandingan dengan periode sebelumnya
+        $prevStart = Carbon::parse($startDate)->subMonth()->format('Y-m-d');
+        $prevEnd = Carbon::parse($endDate)->subMonth()->format('Y-m-d');
+        
+        $prevTransactions = Transaction::whereBetween('created_at', [$prevStart, $prevEnd])->get();
+        $prevDiscount = $prevTransactions->sum('discount_amount');
+        $prevNetRevenue = $prevTransactions->sum('total_amount');
+        $prevGrossRevenue = $prevNetRevenue + $prevDiscount;
+        $prevExpenses = Expense::whereBetween('date', [$prevStart, $prevEnd])->sum('amount');
+        $prevNetProfit = $prevNetRevenue - $prevExpenses;
+
+        // Hitung perubahan persentase
+        $revenueChange = $prevNetRevenue > 0 ? (($totalNetRevenue - $prevNetRevenue) / $prevNetRevenue) * 100 : 0;
+        $profitChange = $prevNetProfit != 0 ? (($netProfit - $prevNetProfit) / abs($prevNetProfit)) * 100 : 0;
 
         return view('reports.financial', compact(
             'transactions',
-            'totalIncome',
+            'totalGrossRevenue',
+            'totalDiscount',
+            'totalNetRevenue',
+            'totalExpenses',
+            'netProfit',
+            'marginPercentage',
             'paymentMethodSummary',
+            'expensesByCategory',
+            'revenueChange',
+            'profitChange',
+            'prevNetProfit',
+            'inventoryValue',
             'startDate',
             'endDate'
         ));

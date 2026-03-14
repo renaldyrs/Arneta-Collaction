@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\Expense;
 use App\Models\PaymentMethod;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -34,6 +35,28 @@ class FinancialReportController extends Controller
 
         // Laba bersih
         $netProfit = $totalRevenue - $totalExpenses;
+
+        // Nilai persediaan (stock * cost) saat ini
+        $inventoryValue = 0;
+        $products = Product::with('sizes')->get();
+        $productsMissingCost = collect();
+        foreach ($products as $p) {
+            // stok efektif: jika ada ukuran (sizes) gunakan pivot stock, else gunakan kolom stock
+            $effectiveStock = 0;
+            if ($p->relationLoaded('sizes') && $p->sizes->count() > 0) {
+                $effectiveStock = $p->sizes->sum('pivot.stock');
+            } else {
+                $effectiveStock = (int) ($p->stock ?? 0);
+            }
+
+            // cost fallback: jika cost tidak diisi atau 0 gunakan perkiraan dari price
+            $unitCost = $p->cost && $p->cost > 0 ? (float) $p->cost : (float) ($p->price * 0.6);
+
+            $inventoryValue += $effectiveStock * $unitCost;
+            if ((!isset($p->cost) || $p->cost == 0) && $effectiveStock > 0) {
+                $productsMissingCost->push(['id' => $p->id, 'name' => $p->name ?: ('#' . $p->id)]);
+            }
+        }
 
         // Pendapatan per metode pembayaran
         $revenueByPaymentMethod = PaymentMethod::withSum([
@@ -73,6 +96,9 @@ class FinancialReportController extends Controller
         // Perbandingan bulanan
         $monthlyComparison = $this->getMonthlyComparison($startDate, $endDate);
 
+        $productsMissingCostCount = $productsMissingCost->count();
+        $productsMissingCostSamples = $productsMissingCost->take(5)->values()->all();
+
         return view('reports.financial', compact(
             'totalRevenue',
             'totalDiscount',
@@ -82,6 +108,9 @@ class FinancialReportController extends Controller
             'dailyTransactions',
             'bestSellingProducts',
             'monthlyComparison',
+            'inventoryValue',
+            'productsMissingCostCount',
+            'productsMissingCostSamples',
             'startDate',
             'endDate'
         ));
@@ -145,6 +174,26 @@ class FinancialReportController extends Controller
 
         $storeProfile = \App\Models\StoreProfile::first();
 
+        // inventory value & products missing cost (same logic as index)
+        $inventoryValue = 0;
+        $productsMissingCost = collect();
+        $products = Product::with('sizes')->get();
+        foreach ($products as $p) {
+            $effectiveStock = 0;
+            if ($p->relationLoaded('sizes') && $p->sizes->count() > 0) {
+                $effectiveStock = $p->sizes->sum('pivot.stock');
+            } else {
+                $effectiveStock = (int) ($p->stock ?? 0);
+            }
+            $unitCost = $p->cost && $p->cost > 0 ? (float) $p->cost : (float) ($p->price * 0.6);
+            $inventoryValue += $effectiveStock * $unitCost;
+            if ((!isset($p->cost) || $p->cost == 0) && $effectiveStock > 0) {
+                $productsMissingCost->push(['id' => $p->id, 'name' => $p->name ?: ('#' . $p->id)]);
+            }
+        }
+        $productsMissingCostCount = $productsMissingCost->count();
+        $productsMissingCostSamples = $productsMissingCost->take(5)->values()->all();
+
         $pdf = Pdf::loadView('reports.financial_pdf', compact(
             'transactions',
             'totalRevenue',
@@ -153,7 +202,10 @@ class FinancialReportController extends Controller
             'netProfit',
             'startDate',
             'endDate',
-            'storeProfile'
+            'storeProfile',
+            'inventoryValue',
+            'productsMissingCostCount',
+            'productsMissingCostSamples'
         ))->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan_keuangan_' . $startDate . '_' . $endDate . '.pdf');
@@ -170,6 +222,26 @@ class FinancialReportController extends Controller
 
         $expenses = Expense::whereBetween('date', [$startDate, $endDate])->get();
 
+        // Nilai persediaan untuk periode saat ini (current stock valuation)
+        $inventoryValue = 0;
+        $productsMissingCost = collect();
+        $products = Product::with('sizes')->get();
+        foreach ($products as $p) {
+            $effectiveStock = 0;
+            if ($p->relationLoaded('sizes') && $p->sizes->count() > 0) {
+                $effectiveStock = $p->sizes->sum('pivot.stock');
+            } else {
+                $effectiveStock = (int) ($p->stock ?? 0);
+            }
+            $unitCost = $p->cost && $p->cost > 0 ? (float) $p->cost : (float) ($p->price * 0.6);
+            $inventoryValue += $effectiveStock * $unitCost;
+            if ((!isset($p->cost) || $p->cost == 0) && $effectiveStock > 0) {
+                $productsMissingCost->push(['id' => $p->id, 'name' => $p->name ?: ('#' . $p->id)]);
+            }
+        }
+        $productsMissingCostCount = $productsMissingCost->count();
+        $productsMissingCostSamples = $productsMissingCost->take(5)->values()->all();
+
         $filename = 'laporan_keuangan_' . $startDate . '_' . $endDate . '.csv';
 
         $headers = [
@@ -177,7 +249,7 @@ class FinancialReportController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
-        $callback = function () use ($transactions, $expenses, $startDate, $endDate) {
+        $callback = function () use ($transactions, $expenses, $startDate, $endDate, $productsMissingCostCount, $productsMissingCostSamples) {
             $handle = fopen('php://output', 'w');
             // BOM untuk Excel agar baca UTF-8 dengan benar
             fputs($handle, "\xEF\xBB\xBF");
@@ -186,6 +258,10 @@ class FinancialReportController extends Controller
             fputcsv($handle, ['LAPORAN KEUANGAN']);
             fputcsv($handle, ['Periode', $startDate . ' s/d ' . $endDate]);
             fputcsv($handle, ['Diekspor pada', now()->format('d/m/Y H:i')]);
+            if ($productsMissingCostCount > 0) {
+                fputcsv($handle, ["Peringatan: Produk tanpa cost (count)", $productsMissingCostCount]);
+                fputcsv($handle, ['Contoh produk tanpa cost', implode(', ', $productsMissingCostSamples)]);
+            }
             fputcsv($handle, []);
 
             // === RINGKASAN ===
@@ -198,6 +274,7 @@ class FinancialReportController extends Controller
             fputcsv($handle, ['Total Pendapatan (Gross)', number_format($totalRevenue, 2, '.', '')]);
             fputcsv($handle, ['Total Diskon', number_format($totalDiscount, 2, '.', '')]);
             fputcsv($handle, ['Total Pengeluaran', number_format($totalExpenses, 2, '.', '')]);
+            fputcsv($handle, ['Nilai Persediaan (stok x cost)', number_format($inventoryValue, 2, '.', '')]);
             fputcsv($handle, ['Laba Bersih', number_format($netProfit, 2, '.', '')]);
             fputcsv($handle, []);
 

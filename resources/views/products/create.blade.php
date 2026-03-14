@@ -16,6 +16,10 @@
         <input type="number" name="price" id="price" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
     </div>
     <div class="mb-4">
+        <label for="cost" class="block text-sm font-medium text-gray-700">Cost (Harga Pokok)</label>
+        <input type="number" step="0.01" name="cost" id="cost" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+    </div>
+    <div class="mb-4">
         <label for="stock" class="block text-sm font-medium text-gray-700">Stok</label>
         <input type="number" name="stock" id="stock" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
     </div>

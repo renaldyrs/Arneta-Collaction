@@ -136,13 +136,14 @@
 
         <!-- Total -->
         <div class="total">
+            @php $receiptSubtotal = $transaction->details->sum('subtotal'); @endphp
             <div class="payment-row">
                 <span>Subtotal</span>
-                <span>Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+                <span>Rp {{ number_format($receiptSubtotal, 0, ',', '.') }}</span>
             </div>
             <div class="payment-row">
                 <span>Diskon</span>
-                <span>Rp 0</span>
+                <span>Rp {{ number_format($transaction->discount_amount ?? 0, 0, ',', '.') }}</span>
             </div>
             <div class="total-row">
                 <span>TOTAL</span>

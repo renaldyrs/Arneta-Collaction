@@ -32,7 +32,7 @@
     </div>
 
     {{-- Stats --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm">
             <div class="flex items-center justify-between mb-2">
                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Shift Hari Ini</p>
@@ -60,6 +60,15 @@
             </div>
             <p class="text-xl font-bold text-gray-900 dark:text-white">Rp {{ number_format($totalRevenue, 0, ',', '.') }}
             </p>
+        </div>
+        <div class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Transaksi Hari Ini</p>
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: rgba(99,102,241,0.12);">
+                    <i class="fas fa-receipt text-indigo-500 text-sm"></i>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalTransactions }}</p>
         </div>
     </div>
 
@@ -128,7 +137,7 @@
                             <td class="px-5 py-3.5 text-right text-xs text-gray-700 dark:text-gray-300">Rp
                                 {{ number_format($shift->opening_cash, 0, ',', '.') }}</td>
                             <td class="px-5 py-3.5 text-right font-bold text-emerald-600 dark:text-emerald-400">Rp
-                                {{ number_format($shift->total_revenue, 0, ',', '.') }}</td>
+                                {{ number_format($shift->transactions_sum_total_amount ?? $shift->total_revenue ?? 0, 0, ',', '.') }}</td>
                             <td class="px-5 py-3.5 text-right">
                                 @if($shift->status === 'closed')
                                     <span

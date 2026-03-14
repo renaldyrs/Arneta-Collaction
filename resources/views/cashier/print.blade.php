@@ -193,13 +193,16 @@
 
         <!-- Total -->
         <div class="total-section">
+            @php
+                $receiptSubtotal = $transaction->details->sum('subtotal');
+            @endphp
             <div class="total-row">
                 <span>Subtotal</span>
-                <span>Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+                <span>Rp {{ number_format($receiptSubtotal, 0, ',', '.') }}</span>
             </div>
             <div class="total-row">
                 <span>Diskon</span>
-                <span>Rp 0</span>
+                <span>Rp {{ number_format($transaction->discount_amount, 0, ',', '.') }}</span>
             </div>
             <div class="total-row grand-total">
                 <span>TOTAL</span>
@@ -228,7 +231,13 @@
             <p class="thank-you">Terima Kasih</p>
             <p>Barang yang sudah dibeli tidak dapat</p>
             <p>ditukar atau dikembalikan</p>
-            <p>www.tokoanda.com</p>
+            <div class="border-t border-dashed border-gray-300 dark:border-gray-600 mt-2 pt-2">
+                <div class="transaction-info">
+                    
+                </div>
+                <p style="font-size: 10px;" class="text-gray-400 font-semibold mt-0.5">Powered by Arneta POS v2.0</p>
+          
+        </div>
         </div>
     </div>
 

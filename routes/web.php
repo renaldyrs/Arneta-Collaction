@@ -49,6 +49,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
     // Products
     Route::resource('products', ProductController::class);
+    Route::post('/products/fill-missing-cost', [ProductController::class, 'fillMissingCost'])->name('products.fill-missing-cost');
     Route::get('/products/print-barcodes/{id}', [ProductController::class, 'printBarcodes'])->name('products.print-barcodes');
     Route::get('/products/{id}/download-barcode', [ProductController::class, 'downloadBarcode'])->name('products.downloadBarcode');
     Route::get('/barcode/{code}', [ProductController::class, 'generateBarcode'])->name('barcode.generate');

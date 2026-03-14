@@ -45,6 +45,13 @@
                         required>
                 </div>
 
+                <!-- Cost -->
+                <div class="mb-4">
+                    <label for="cost" class="block text-sm font-medium text-gray-700">Cost (Harga Pokok)</label>
+                    <input type="number" step="0.01" name="cost" id="cost"
+                        class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500" value="{{ $product->cost }}">
+                </div>
+
                 <!-- Stok -->
                 <div class="mb-4">
                     <label for="stock" class="block text-sm font-medium text-gray-700">Stok</label>

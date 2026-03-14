@@ -19,6 +19,36 @@
         </div>
     </div>
 
+    @if(!empty($productsMissingCostCount) && $productsMissingCostCount > 0)
+        <div class="mb-4 p-4 border-l-4 border-amber-400 bg-amber-50 text-amber-800 rounded">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <strong>Peringatan:</strong> Terdapat <strong>{{ $productsMissingCostCount }}</strong> produk dengan nilai `cost` kosong/0.
+                    @if(!empty($productsMissingCostSamples))
+                        <div class="text-sm mt-1">Contoh:
+                            @foreach($productsMissingCostSamples as $idx => $prod)
+                                @if(is_array($prod) && isset($prod['id']))
+                                    <a href="{{ route('products.edit', $prod['id']) }}" class="underline text-amber-700">{{ $prod['name'] }}</a>@if($idx < count($productsMissingCostSamples)-1), @endif
+                                @else
+                                    {{ is_array($prod) ? ($prod['name'] ?? '#') : $prod }}@if($idx < count($productsMissingCostSamples)-1), @endif
+                                @endif
+                            @endforeach
+                            @if($productsMissingCostCount > count($productsMissingCostSamples)) , ... @endif
+                        </div>
+                    @endif
+                    <div class="text-xs mt-2 text-gray-600">Silakan perbarui nilai `cost` pada produk yang bersangkutan untuk perhitungan persediaan akurat.</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <form method="POST" action="{{ route('products.fill-missing-cost') }}" onsubmit="return confirm('Isi nilai cost default untuk produk yang belum memiliki cost?');">
+                        @csrf
+                        <button type="submit" class="btn-danger">Isi cost default</button>
+                    </form>
+                    <a href="{{ route('products.index') }}" class="btn-secondary">Kelola Produk</a>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Filter --}}
     <div
         class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-4 mb-5 no-print">
@@ -42,59 +72,64 @@
         </form>
     </div>
 
-    {{-- KPI Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-        {{-- Total Pendapatan --}}
-        <div
-            class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-5"
-                style="background: #10b981; transform: translate(30%,-30%);"></div>
+    {{-- KPI Cards - Laporan Laba Rugi --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        {{-- Pendapatan Kotor --}}
+        <div class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-5" style="background: #3b82f6; transform: translate(30%,-30%);"></div>
             <div class="flex items-center justify-between mb-3">
-                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Pendapatan
-                </p>
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(16,185,129,0.12);">
-                    <i class="fas fa-wallet text-emerald-500 text-sm"></i>
-                </div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pend. Kotor</p>
+                <i class="fas fa-arrow-trending-up text-blue-500 text-lg"></i>
             </div>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">Rp {{ number_format($totalIncome, 0, ',', '.') }}
-            </p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">Rp {{ number_format($totalGrossRevenue, 0, ',', '.') }}</p>
+            <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mt-1">sebelum diskon</p>
+        </div>
+
+        {{-- Total Diskon --}}
+        <div class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-5" style="background: #f59e0b; transform: translate(30%,-30%);"></div>
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Diskon</p>
+                <i class="fas fa-tag text-amber-500 text-lg"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">Rp {{ number_format($totalDiscount, 0, ',', '.') }}</p>
+            <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mt-1">{{ $totalGrossRevenue > 0 ? number_format(($totalDiscount/$totalGrossRevenue)*100, 1) : 0 }}% dari gross</p>
+        </div>
+
+        {{-- Pendapatan Bersih --}}
+        <div class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-5" style="background: #10b981; transform: translate(30%,-30%);"></div>
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pend. Bersih</p>
+                <i class="fas fa-wallet text-emerald-500 text-lg"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">Rp {{ number_format($totalNetRevenue, 0, ',', '.') }}</p>
             <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">
-                <i class="fas fa-arrow-up text-[10px]"></i> Periode yang dipilih
+                <i class="fas fa-arrow-up text-[10px]"></i> 
+                @if($revenueChange >= 0)
+                    {{ number_format($revenueChange, 1) }}% vs periode lalu
+                @else
+                    {{ number_format($revenueChange, 1) }}% vs periode lalu
+                @endif
             </p>
         </div>
 
-        {{-- Jumlah Transaksi --}}
-        <div
-            class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-5"
-                style="background: #6366f1; transform: translate(30%,-30%);"></div>
+        {{-- Laba Bersih --}}
+        <div class="bg-gradient-to-br {{ $netProfit >= 0 ? 'from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20' : 'from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20' }} rounded-2xl p-5 border {{ $netProfit >= 0 ? 'border-emerald-200 dark:border-emerald-800/50' : 'border-red-200 dark:border-red-800/50' }} shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-5" style="background: {{ $netProfit >= 0 ? '#059669' : '#dc2626' }}; transform: translate(30%,-30%);"></div>
             <div class="flex items-center justify-between mb-3">
-                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jumlah Transaksi
-                </p>
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(99,102,241,0.12);">
-                    <i class="fas fa-receipt text-indigo-500 text-sm"></i>
-                </div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Laba Bersih</p>
+                <i class="fas {{ $netProfit >= 0 ? 'fa-chart-line text-emerald-500' : 'fa-arrow-down text-red-500' }} text-lg"></i>
             </div>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $transactions->count() }}</p>
-            <p class="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-1">transaksi terkonfirmasi</p>
-        </div>
-
-        {{-- Rata-rata --}}
-        <div
-            class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-5"
-                style="background: #f59e0b; transform: translate(30%,-30%);"></div>
-            <div class="flex items-center justify-between mb-3">
-                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rata-rata
-                    Transaksi</p>
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(245,158,11,0.12);">
-                    <i class="fas fa-calculator text-amber-500 text-sm"></i>
-                </div>
-            </div>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                Rp {{ $transactions->count() > 0 ? number_format($totalIncome / $transactions->count(), 0, ',', '.') : 0 }}
+            <p class="text-2xl font-bold {{ $netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">Rp {{ number_format($netProfit, 0, ',', '.') }}</p>
+            <p class="text-xs {{ $netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }} font-medium mt-1">
+                Margin: {{ number_format($marginPercentage, 1) }}%
+                @if($profitChange >= 0 && $profitChange != 0)
+                    | <i class="fas fa-arrow-up text-[10px]"></i> {{ number_format($profitChange, 1) }}%
+                @elseif($profitChange < 0)
+                    | <i class="fas fa-arrow-down text-[10px]"></i> {{ number_format($profitChange, 1) }}%
+                @endif
             </p>
-            <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mt-1">per transaksi</p>
         </div>
     </div>
 
@@ -119,7 +154,7 @@
                     @php
                         $colors = ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6'];
                         $c = $colors[$i % count($colors)];
-                        $pct = $totalIncome > 0 ? round(($method['total'] / $totalIncome) * 100, 1) : 0;
+                        $pct = $totalNetRevenue > 0 ? round(($method['total'] / $totalNetRevenue) * 100, 1) : 0;
                     @endphp
                     <div class="p-4 rounded-xl border border-gray-100 dark:border-gray-700/50">
                         <div class="flex items-center justify-between mb-3">
@@ -140,6 +175,102 @@
             </div>
         </div>
     </div>
+
+    {{-- Breakdown Pengeluaran --}}
+    @if($expensesByCategory->count() > 0 || $totalExpenses > 0)
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+        <div class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-money-bill text-red-500"></i> Breakdown Pengeluaran
+                </h3>
+            </div>
+            <div class="p-5">
+                @if($expensesByCategory->count() > 0)
+                    <div class="space-y-3">
+                        @php
+                            $expenseColors = ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16'];
+                        @endphp
+                        @foreach($expensesByCategory as $idx => $expense)
+                            @php
+                                $color = $expenseColors[$idx % count($expenseColors)];
+                                $percentage = $totalExpenses > 0 ? ($expense->total / $totalExpenses) * 100 : 0;
+                            @endphp
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ ucfirst($expense->category) ?? 'Lainnya' }}
+                                    </span>
+                                    <span class="text-sm font-bold text-gray-900 dark:text-white">
+                                        Rp {{ number_format($expense->total, 0, ',', '.') }}
+                                    </span>
+                                </div>
+                                <div class="relative h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-700" 
+                                        style="width: {{ $percentage }}%; background: {{ $color }};"></div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">{{ number_format($percentage, 1) }}% ({{ $expense->count }} item)</p>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 dark:text-gray-300">Total Pengeluaran</span>
+                            <span class="text-lg font-bold text-red-600 dark:text-red-400">
+                                Rp {{ number_format($totalExpenses, 0, ',', '.') }}
+                            </span>
+                        </div>
+                    </div>
+                @else
+                    <p class="text-gray-400 text-sm text-center py-4">Tidak ada pengeluaran pada periode ini</p>
+                @endif
+            </div>
+        </div>
+
+        {{-- Ringkasan Laporan Laba Rugi --}}
+        <div class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-chart-line text-blue-500"></i> Ringkasan Laba Rugi
+                </h3>
+            </div>
+            <div class="p-5 space-y-3">
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-gray-700 dark:text-gray-300">Pendapatan Kotor</span>
+                    <span class="font-bold text-gray-900 dark:text-white">Rp {{ number_format($totalGrossRevenue, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-gray-700 dark:text-gray-300">Diskon</span>
+                    <span class="font-bold text-amber-600 dark:text-amber-400">- Rp {{ number_format($totalDiscount, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-gray-700 dark:text-gray-300">Nilai Persediaan (stok x cost)</span>
+                    <span class="font-bold text-gray-900 dark:text-white">Rp {{ number_format($inventoryValue ?? 0, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 px-2 rounded">
+                    <span class="font-semibold text-gray-800 dark:text-white">Pendapatan Bersih</span>
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($totalNetRevenue, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-gray-700 dark:text-gray-300">Pengeluaran</span>
+                    <span class="font-bold text-red-600 dark:text-red-400">- Rp {{ number_format($totalExpenses, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between items-center py-3 bg-gradient-to-r {{ $netProfit >= 0 ? 'from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30' : 'from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30' }} px-3 rounded-lg">
+                    <span class="font-bold text-gray-900 dark:text-white">Laba Bersih</span>
+                    <span class="text-lg font-bold {{ $netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                        Rp {{ number_format($netProfit, 0, ',', '.') }}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center text-xs pt-2">
+                    <span class="text-gray-600 dark:text-gray-400">Margin Keuntungan</span>
+                    <span class="font-bold {{ $marginPercentage >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                        {{ number_format($marginPercentage, 2) }}%
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Transaction Table --}}
     <div

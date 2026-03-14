@@ -67,6 +67,7 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
+            'cost' => 'nullable|numeric',
             'stock' => 'required|integer',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
@@ -91,6 +92,7 @@ class ProductController extends Controller
             'code' => $code,
             'name' => $request->name,
             'price' => $request->price,
+            'cost' => $request->cost ?? 0,
             'stock' => $request->stock,
             'description' => $request->description,
             'category_id' => $request->category_id,
@@ -126,6 +128,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
+            'cost' => 'nullable|numeric',
             'stock' => 'required|integer',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'supplier_id' => 'nullable|exists:suppliers,id',
@@ -148,14 +151,25 @@ class ProductController extends Controller
 
         // Perbarui ukuran dan stok
         if ($request->has('sizes')) {
-            // Hapus semua ukuran yang terkait dengan produk
-            $product->sizes()->detach();
-
-            // Tambahkan ukuran baru atau perbarui stok
+            // Siapkan data untuk sync: [size_id => ['stock' => x], ...]
+            $syncData = [];
+            $totalStock = 0;
             foreach ($request->sizes as $size) {
                 $sizeModel = Size::firstOrCreate(['name' => $size['name']]);
-                $product->sizes()->attach($sizeModel->id, ['stock' => $size['stock']]);
+                $stock = isset($size['stock']) ? (int) $size['stock'] : 0;
+                $syncData[$sizeModel->id] = ['stock' => $stock];
+                $totalStock += $stock;
             }
+
+            // Sinkronkan pivot (akan menambah, menghapus, atau memperbarui stok sesuai data)
+            $product->sizes()->sync($syncData);
+
+            // Perbarui stok utama produk agar mencerminkan jumlah stok per ukuran
+            $product->update(['stock' => $totalStock]);
+        }
+
+        if ($request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json') {
+            return response()->json(['message' => 'Produk berhasil diperbarui.']);
         }
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui.');
@@ -206,6 +220,30 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
         return view('products.barcode', compact('products'));
+    }
+
+    // Fill missing cost for products (admin action)
+    public function fillMissingCost(Request $request)
+    {
+        // Only allow admin middleware at route level; extra safety: could check here
+        $products = Product::with('sizes')->get();
+        $updated = 0;
+        foreach ($products as $p) {
+            $effectiveStock = 0;
+            if ($p->relationLoaded('sizes') && $p->sizes->count() > 0) {
+                $effectiveStock = $p->sizes->sum('pivot.stock');
+            } else {
+                $effectiveStock = (int) ($p->stock ?? 0);
+            }
+
+            if ((!isset($p->cost) || $p->cost == 0) && $effectiveStock > 0) {
+                $p->cost = $p->price * 0.6;
+                $p->save();
+                $updated++;
+            }
+        }
+
+        return redirect()->back()->with('success', "Telah mengisi nilai cost untuk {$updated} produk (fallback price * 0.6).");
     }
 
 

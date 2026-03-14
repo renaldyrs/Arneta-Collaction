@@ -21,7 +21,9 @@ class ShiftController extends Controller
         $date = $request->input('date');
         $userId = $request->input('user_id');
 
-        $query = Shift::with('user');
+        $query = Shift::with('user')
+            ->withCount('transactions')
+            ->withSum('transactions', 'total_amount');
 
         if ($date) {
             $query->whereDate('created_at', $date);
@@ -36,14 +38,17 @@ class ShiftController extends Controller
         // Statistik
         $totalShifts = Shift::whereDate('created_at', today())->count();
         $openShifts = Shift::where('status', 'open')->count();
-        $totalRevenue = Shift::whereDate('created_at', today())->sum('total_revenue');
+        // Hitung total revenue dan transaksi hari ini berdasarkan tabel transaksi (real-time)
+        $totalRevenue = Transaction::whereDate('created_at', today())->sum('total_amount');
+        $totalTransactions = Transaction::whereDate('created_at', today())->count();
 
         return view('shifts.index', compact(
             'shifts',
             'activeShift',
             'totalShifts',
             'openShifts',
-            'totalRevenue'
+            'totalRevenue',
+            'totalTransactions'
         ));
     }
 

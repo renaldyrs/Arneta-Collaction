@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    @if($outOfStockProducts->isEmpty() && $lowStockProducts->isEmpty())
+    @if ($outOfStockProducts->isEmpty() && $lowStockProducts->isEmpty())
         {{-- All Good --}}
         <div
             class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-16 text-center">
@@ -70,7 +70,7 @@
     @endif
 
     {{-- Stok Habis --}}
-    @if($outOfStockProducts->isNotEmpty())
+    @if ($outOfStockProducts->isNotEmpty())
         <div
             class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-red-200 dark:border-red-800/50 overflow-hidden mb-5">
             <div class="px-5 py-4 border-b border-red-100 dark:border-red-800/50 flex items-center gap-3"
@@ -105,7 +105,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                        @foreach($outOfStockProducts as $product)
+                        @foreach ($outOfStockProducts as $product)
                             <tr class="hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-colors">
                                 <td class="px-5 py-3.5">
                                     <p class="font-semibold text-gray-800 dark:text-white text-sm">{{ $product->name }}</p>
@@ -141,7 +141,7 @@
     @endif
 
     {{-- Stok Menipis --}}
-    @if($lowStockProducts->isNotEmpty())
+    @if ($lowStockProducts->isNotEmpty())
         <div
             class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-amber-200 dark:border-amber-800/50 overflow-hidden">
             <div class="px-5 py-4 border-b border-amber-100 dark:border-amber-800/50 flex items-center gap-3"
@@ -179,7 +179,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                        @foreach($lowStockProducts as $product)
+                        @foreach ($lowStockProducts as $product)
                             @php
                                 $pct = $product->low_stock_threshold > 0 ? round(($product->stock / $product->low_stock_threshold) * 100) : 0;
                                 $pct = min($pct, 100);

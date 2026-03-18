@@ -1,51 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
+<@php
+    $printSetting = \App\Models\PrintSetting::first() ?? (object)[
+        'barcode_width' => 40,
+        'barcode_height' => 30,
+        'show_price_on_barcode' => true
+    ];
+@endphp
 <head>
-    <title>Cetak Barcode Produk</title>
+    <meta charset="UTF-8">
+    <title>Cetak Barcode - {{ $products->first()->name ?? '' }}</title>
     <style>
         @page {
-            size: 80mm 50mm; /* Ukuran kertas thermal */
-            margin: 2mm; /* Margin kertas */
+            size: {{ $printSetting->barcode_width }}mm {{ $printSetting->barcode_height }}mm;
+            margin: 0;
         }
         body {
-            font-family: Arial, sans-serif;
-            font-size: 10px;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: white;
         }
-        .barcode-sheet {
-            display: grid;
-            grid-template-columns: 1fr; /* 1 kolom untuk thermal */
-            gap: 1mm; /* Jarak antar barcode */
-        }
-        .barcode-label {
-            border: 1px dashed #ccc;
-            padding: 1mm;
+        .barcode-container {
+            width: {{ $printSetting->barcode_width }}mm;
+            height: {{ $printSetting->barcode_height }}mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            page-break-inside: avoid;
+            box-sizing: border-box;
+            padding: 1mm;
+            page-break-after: always;
+            overflow: hidden;
         }
         .product-name {
+            font-size: 8pt;
             font-weight: bold;
-           
-            
+            line-height: 1.1;
+            margin-bottom: 1mm;
+            height: 2.4em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
-        .barcode {
-          
-            height: 30mm; /* Tinggi barcode */
+        .barcode-svg {
+            width: 100% !important;
+            height: auto !important;
+            max-height: {{ $printSetting->barcode_height * 0.4 }}mm;
         }
         .product-price {
-            font-weight: bold;
-            color: #d00;
+            font-size: 9pt;
+            font-weight: 800;
+            margin-top: 1mm;
         }
-        .no-print {
-            display: none;
+        .product-code {
+            font-size: 6pt;
+            color: #555;
+            margin-top: 0.5mm;
         }
         @media screen {
             body {
-                
-                background: #f5f5f5;
+                background-color: #f0f2f5;
+                padding: 20px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center;
+            }
+            .barcode-container {
+                background-color: white;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                border-radius: 4px;
+                border: 1px solid #ddd;
             }
             .no-print {
-                display: block;
-                
+                width: 100%;
+                margin-bottom: 20px;
+                text-align: center;
+                background: white;
+                padding: 15px;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            }
+        }
+        @media print {
+            .no-print {
+                display: none;
             }
         }
     </style>
@@ -53,46 +95,46 @@
 </head>
 <body>
     <div class="no-print">
-        <button onclick="window.print()" style="padding:5px 10px;background:#4CAF50;color:white;border:none;cursor:pointer;">
-            🖨️ Cetak Barcode
-        </button>
-        <a href="{{ route('products.index') }}" style="padding:5px 10px;background:#f44336;color:white;text-decoration:none;">
-            Kembali
-        </a>
-        <p style="margin-top:5px;">Total produk: {{ $products->count() }} (akan mencetak {{ $products->sum('stock') }} label)</p>
+        <div style="margin-bottom: 15px; font-weight: bold; font-size: 1.2rem; color: #1a202c;">Preview Barcode Cetak</div>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <button onclick="window.print()" style="padding:10px 20px; background:#10b981; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                <span>🖨️ Cetak Sekarang</span>
+            </button>
+            <button onclick="window.close()" style="padding:10px 20px; background:#ef4444; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                Batal
+            </button>
+        </div>
+        <p style="margin-top:15px; color: #718096; font-size: 0.9rem;">Mencetak <strong>{{ $quantity }}</strong> label untuk produk: <strong>{{ $products->first()->name }}</strong></p>
     </div>
 
-    <div class="barcode-sheet">
-        @foreach($products as $product)
-            @for($i = 0; $i < $product->stock; $i++)
-                <div class="barcode-label">
-                    <div class="product-name">{{ Str::limit($product->name, 20) }}</div>
-                    <svg class="barcode"
-                        jsbarcode-value="{{ $product->code }}"
-                        jsbarcode-height="30" /* Tinggi barcode */
-                        jsbarcode-displayValue="false"
-                        jsbarcode-margin="0">
-                    </svg>
-                    <div class="product-price">Rp {{ number_format($product->price,0) }}</div>
-                    <div class="product-code">{{ $product->code }}</div>
-                </div>
-            @endfor
-        @endforeach
-    </div>
+    @foreach ($products as $product)
+        @for ($i = 0; $i < $quantity; $i++)
+            <div class="barcode-container">
+                <div class="product-name">{{ $product->name }}</div>
+                <svg class="barcode-svg"
+                    data-value="{{ $product->code }}"
+                    data-text="{{ $product->code }}">
+                </svg>
+                @if ($printSetting->show_price_on_barcode)
+                    <div class="product-price">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
+                @endif
+                <div class="product-code">{{ $product->code }}</div>
+            </div>
+        @endfor
+    @endforeach
 
     <script>
-        // Generate semua barcode
         window.onload = function() {
-            JsBarcode(".barcode").init();
-            
-            @if(request()->has('auto_print'))
-            setTimeout(function() {
-                window.print();
-                setTimeout(function() {
-                    window.location.href = "{{ route('products.index') }}?printed=true";
-                }, 1000);
-            }, 500);
-            @endif
+            const barcodes = document.querySelectorAll('.barcode-svg');
+            barcodes.forEach(el => {
+                JsBarcode(el, el.getAttribute('data-value'), {
+                    format: "CODE128",
+                    width: 2,
+                    height: 40,
+                    displayValue: false,
+                    margin: 0
+                });
+            });
         };
     </script>
 </body>

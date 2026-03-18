@@ -13,8 +13,9 @@
             color: #000;
         }
         .receipt {
-            max-width: 300px;
+            max-width: {{ ($printSetting->paper_width ?? 80) }}mm;
             margin: 0 auto;
+            font-size: {{ ($printSetting->font_size ?? 12) }}px;
         }
         .header {
             text-align: center;
@@ -93,13 +94,30 @@
         }
     </style>
 </head>
+@php
+    $printSetting = \App\Models\PrintSetting::first() ?? (object)[
+        'show_logo' => true, 
+        'receipt_header' => 'Terima kasih atas kunjungan Anda!', 
+        'receipt_footer' => 'Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.',
+        'show_cashier_name' => true,
+        'show_customer_name' => true
+    ];
+@endphp
 <body>
     <div class="receipt">
         <!-- Header -->
         <div class="header">
+            @if ($printSetting->show_logo && $storeProfile && $storeProfile->logo)
+                <div style="margin-bottom: 10px;">
+                    <img src="{{ $storeProfile->logo_url }}" style="max-width: 150px; max-height: 60px; filter: grayscale(100%);">
+                </div>
+            @endif
             <h1 class="store-name">{{ $storeProfile->name ?? 'Toko' }}</h1>
             <p class="store-detail">{{ $storeProfile->address ?? '-' }}</p>
             <p class="store-detail">Telp: {{ $storeProfile->phone ?? '-' }}</p>
+            @if ($printSetting->receipt_header)
+                <p class="store-detail" style="font-style: italic; margin-top: 5px;">{{ $printSetting->receipt_header }}</p>
+            @endif
         </div>
 
         <!-- Transaction Info -->
@@ -112,18 +130,26 @@
                 <span>Tanggal</span>
                 <span>{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
             </div>
+            @if ($printSetting->show_cashier_name)
             <div class="payment-row">
                 <span>Kasir</span>
                 <span>{{ $transaction->user->name ?? '-' }}</span>
             </div>
+            @endif
+            @if ($printSetting->show_customer_name && $transaction->customer)
+            <div class="payment-row">
+                <span>Pelanggan</span>
+                <span>{{ $transaction->customer->name }}</span>
+            </div>
+            @endif
         </div>
 
         <!-- Items -->
         <div class="items">
-            @foreach($transaction->details as $detail)
+            @foreach ($transaction->details as $detail)
             <div class="item">
                 <div class="item-name">{{ $detail->product->name }}</div>
-                @if($detail->size)
+                @if ($detail->size)
                 <div style="margin-left: 10px; font-size: 11px;">Ukuran: {{ $detail->size }}</div>
                 @endif
                 <div class="item-detail">
@@ -169,10 +195,18 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p class="thank-you">Terima Kasih</p>
-            <p>Barang yang sudah dibeli tidak dapat</p>
-            <p>ditukar atau dikembalikan</p>
-            <p>www.tokoanda.com</p>
+            @if ($printSetting->show_thank_you_note)
+                <p class="thank-you">TERIMA KASIH</p>
+            @endif
+            @if ($printSetting->receipt_footer)
+                <div style="margin-bottom: 5px; white-space: pre-wrap;">{{ $printSetting->receipt_footer }}</div>
+            @else
+                <p>Barang yang sudah dibeli tidak dapat</p>
+                <p>ditukar atau dikembalikan</p>
+            @endif
+            <div class="border-t border-dashed border-gray-300 dark:border-gray-600 mt-2 pt-2">
+                <p style="font-size: 10px;" class="text-gray-400 font-semibold mt-0.5">Powered by Arneta POS v2.0</p>
+            </div>
         </div>
     </div>
 

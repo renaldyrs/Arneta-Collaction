@@ -91,7 +91,7 @@
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
                     <h3 class="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
                         <i class="fas fa-list text-emerald-500"></i> Riwayat Transaksi
-                        @if($startDate || $endDate)
+                        @if ($startDate || $endDate)
                             <span class="badge badge-blue ml-1">{{ $startDate }} – {{ $endDate }}</span>
                         @endif
                     </h3>
@@ -121,7 +121,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                            @forelse($transactions as $tx)
+                            @forelse ($transactions as $tx)
                                 <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors">
                                     <td class="px-5 py-3.5">
                                         <code
@@ -131,7 +131,7 @@
                                     </td>
                                     <td class="px-5 py-3.5">
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($tx->details as $d)
+                                            @foreach ($tx->details as $d)
                                                 <span class="badge badge-gray text-xs">{{ $d->product->name }}
                                                     ×{{ $d->quantity }}{{ $d->size ? " ($d->size)" : '' }}</span>
                                             @endforeach
@@ -164,7 +164,7 @@
                         </tbody>
                     </table>
                 </div>
-                @if($transactions->hasPages())
+                @if ($transactions->hasPages())
                     <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                         {{ $transactions->appends(request()->query())->links('vendor.tailwind') }}
                     </div>

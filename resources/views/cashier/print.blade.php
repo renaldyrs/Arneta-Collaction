@@ -8,15 +8,50 @@
         body {
             font-family: 'Courier New', monospace;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             background: white;
             color: black;
-            width: 80mm; /* Ukuran thermal printer 80mm */
+            width: {{ ($printSetting->paper_width ?? 80) }}mm;
             margin: 0 auto;
+            font-size: {{ ($printSetting->font_size ?? 12) }}px;
         }
         
         .receipt {
             width: 100%;
+        }
+
+        @if (isset($is_test) && $is_test)
+        .test-badge {
+            background: #000;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        @endif
+
+        @media print {
+            .no-print { display: none; }
+            .cutter-space {
+                height: 60px;
+            }
+        }
+        
+        .no-print-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: sans-serif;
+            z-index: 1000;
         }
         
         .header {
@@ -148,13 +183,35 @@
         }
     </style>
 </head>
+@php
+    $printSetting = \App\Models\PrintSetting::first() ?? (object)[
+        'show_logo' => true, 
+        'receipt_header' => 'Terima kasih atas kunjungan Anda!', 
+        'receipt_footer' => 'Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.',
+        'show_cashier_name' => true,
+        'show_customer_name' => true
+    ];
+@endphp
 <body>
     <div class="receipt">
+        @if (isset($is_test) && $is_test)
+            <div class="test-badge">Printer Test Print</div>
+        @endif
         <!-- Header -->
         <div class="header">
+            @if ($printSetting->show_logo && $storeProfile && $storeProfile->logo)
+                <div style="margin-bottom: 10px;">
+                    <img src="{{ $storeProfile->logo_url }}" style="max-width: 150px; max-height: 60px; filter: grayscale(100%);">
+                </div>
+            @endif
             <h1 class="store-name">{{ $storeProfile->name ?? 'TOKO' }}</h1>
             <p class="store-detail">{{ $storeProfile->address ?? '-' }}</p>
             <p class="store-detail">Telp: {{ $storeProfile->phone ?? '-' }}</p>
+            @if ($printSetting->receipt_header)
+                <p class="thank-you" style="font-weight: normal; font-style: italic; margin-top: 10px; font-size: 11px;">
+                    {{ $printSetting->receipt_header }}
+                </p>
+            @endif
         </div>
 
         <!-- Transaction Info -->
@@ -167,19 +224,27 @@
                 <span>Tanggal</span>
                 <span>{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
             </div>
+            @if ($printSetting->show_cashier_name)
             <div class="info-row">
                 <span>Kasir</span>
                 <span>{{ $transaction->user->name ?? '-' }}</span>
             </div>
+            @endif
+            @if ($printSetting->show_customer_name && $transaction->customer)
+            <div class="info-row">
+                <span>Pelanggan</span>
+                <span>{{ $transaction->customer->name }}</span>
+            </div>
+            @endif
         </div>
 
         <!-- Items -->
         <div class="items">
-            @foreach($transaction->details as $detail)
+            @foreach ($transaction->details as $detail)
             <div class="item">
                 <div class="item-name">
                     {{ $detail->product->name }}
-                    @if($detail->size)
+                    @if ($detail->size)
                     <span class="item-size">({{ $detail->size }})</span>
                     @endif
                 </div>
@@ -228,18 +293,21 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p class="thank-you">Terima Kasih</p>
-            <p>Barang yang sudah dibeli tidak dapat</p>
-            <p>ditukar atau dikembalikan</p>
-            <div class="border-t border-dashed border-gray-300 dark:border-gray-600 mt-2 pt-2">
-                <div class="transaction-info">
-                    
-                </div>
-                <p style="font-size: 10px;" class="text-gray-400 font-semibold mt-0.5">Powered by Arneta POS v2.0</p>
-          
-        </div>
+            @if ($printSetting->show_thank_you_note)
+                <div style="font-weight: bold; margin-bottom: 5px;">TERIMA KASIH</div>
+            @endif
+            <div style="white-space: pre-wrap;">{!! nl2br(e($printSetting->receipt_footer)) !!}</div>
+            <div style="margin-top: 10px; font-size: 10px; color: #666;">
+                Powered by Arneta POS v2.0
+            </div>
         </div>
     </div>
+
+    @if ($printSetting->auto_cut)
+        <div class="cutter-space"></div>
+    @endif
+
+    <button class="no-print no-print-btn" onclick="window.print()">Cetak Manual</button>
 
     <!-- Auto Print Script -->
     <script>

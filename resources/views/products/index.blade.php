@@ -73,7 +73,7 @@
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari produk..."
                         class="pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 dark:text-white focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 w-52">
                 </div>
-                @if(request('search'))
+                @if (request('search'))
                     <a href="{{ route('products.index') }}"
                         class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <i class="fas fa-times"></i>
@@ -118,7 +118,7 @@
                         <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors">
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-3">
-                                    @if($product->image)
+                                    @if ($product->image)
                                         <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
                                             class="w-10 h-10 rounded-xl object-cover flex-shrink-0">
                                     @else
@@ -134,7 +134,7 @@
                                 </div>
                             </td>
                             <td class="px-5 py-3.5">
-                                @if($product->barcode)
+                                @if ($product->barcode)
                                     <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($product->barcode, 'C128') }}"
                                         alt="barcode" class="h-8 w-28">
                                 @else
@@ -158,9 +158,9 @@
                                 </span>
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                @if($product->stock > 10)
+                                @if ($product->stock > 10)
                                     <span class="badge badge-green"><i class="fas fa-circle text-[6px]"></i> Aman</span>
-                                @elseif($product->stock > 0)
+                                @elseif ($product->stock > 0)
                                     <span class="badge badge-yellow"><i class="fas fa-circle text-[6px]"></i> Menipis</span>
                                 @else
                                     <span class="badge badge-red"><i class="fas fa-circle text-[6px]"></i> Habis</span>
@@ -174,11 +174,11 @@
                                         title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
-                                    <a href="{{ route('products.print-barcodes', $product->id) }}" target="_blank"
+                                    <button onclick="printBarcode({{ $product->id }}, {{ $product->stock }})"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                         title="Print Barcode">
                                         <i class="fas fa-print text-xs"></i>
-                                    </a>
+                                    </button>
                                     <button onclick="deleteProduct({{ $product->id }}, '{{ addslashes($product->name) }}')"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                         title="Hapus">
@@ -214,11 +214,11 @@
                 <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data"
                     id="addProductForm">
                     @csrf
-                    @if($errors->any())
+                    @if ($errors->any())
                         <div class="mb-4 p-3 rounded-xl text-sm"
                             style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">
                             <ul class="list-disc list-inside space-y-0.5">
-                                @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
                             </ul>
                         </div>
                     @endif
@@ -264,7 +264,7 @@
                                 *</label>
                             <select name="category_id" required class="form-input">
                                 <option value="">Pilih Kategori</option>
-                                @foreach($categories as $cat)
+                                @foreach ($categories as $cat)
                                     <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>
                                         {{ $cat->name }}
                                     </option>
@@ -277,7 +277,7 @@
                                 *</label>
                             <select name="supplier_id" required class="form-input">
                                 <option value="">Pilih Supplier</option>
-                                @foreach($suppliers as $sup)
+                                @foreach ($suppliers as $sup)
                                     <option value="{{ $sup->id }}" {{ old('supplier_id') == $sup->id ? 'selected' : '' }}>
                                         {{ $sup->name }}
                                     </option>
@@ -386,7 +386,7 @@
                             *</label>
                         <select id="eProdCategory" required class="form-input">
                             <option value="">Pilih Kategori</option>
-                            @foreach($categories as $cat)
+                            @foreach ($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                             @endforeach
                         </select>
@@ -469,7 +469,7 @@
                 }
             });
         });
-            @if($errors->any()) document.addEventListener('DOMContentLoaded', openModal); @endif
+            @if ($errors->any()) document.addEventListener('DOMContentLoaded', openModal); @endif
 
             // ── Edit Modal ──
             const CSRF = document.querySelector('meta[name="csrf-token"]').content;
@@ -537,6 +537,25 @@
             const res = await fetch(`/products/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } });
             if (res.ok) { showToast('Produk berhasil dihapus!'); setTimeout(() => location.reload(), 600); }
             else { showToast('Gagal menghapus produk', 'error'); }
+        }
+
+        async function printBarcode(id, stock) {
+            const { value: quantity } = await Swal.fire({
+                title: 'Cetak Barcode',
+                input: 'number',
+                inputLabel: 'Jumlah Label yang Dicetak',
+                inputValue: stock > 0 ? stock : 1,
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value || value < 1) {
+                        return 'Jumlah harus minimal 1!'
+                    }
+                }
+            });
+
+            if (quantity) {
+                window.open(`/products/print-barcodes/${id}?quantity=${quantity}`, '_blank');
+            }
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEditModal(); });
     </script>

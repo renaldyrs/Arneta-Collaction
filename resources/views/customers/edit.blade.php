@@ -15,20 +15,20 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
                 <input type="text" name="name" value="{{ old('name', $customer->name) }}" required
-                    class="w-full px-3 py-2 border @error('name') border-red-500 @else border-gray-200 dark:border-gray-600 @enderror rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                @error('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    class="w-full px-3 py-2 border @error ('name') border-red-500 @else border-gray-200 dark:border-gray-600 @enderror rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                @error ('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">No. Telepon</label>
                 <input type="text" name="phone" value="{{ old('phone', $customer->phone) }}"
-                    class="w-full px-3 py-2 border @error('phone') border-red-500 @else border-gray-200 dark:border-gray-600 @enderror rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                @error('phone')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    class="w-full px-3 py-2 border @error ('phone') border-red-500 @else border-gray-200 dark:border-gray-600 @enderror rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                @error ('phone')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                 <input type="email" name="email" value="{{ old('email', $customer->email) }}"
-                    class="w-full px-3 py-2 border @error('email') border-red-500 @else border-gray-200 dark:border-gray-600 @enderror rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                @error('email')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    class="w-full px-3 py-2 border @error ('email') border-red-500 @else border-gray-200 dark:border-gray-600 @enderror rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                @error ('email')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat</label>

@@ -38,6 +38,7 @@ class PurchaseOrderController extends Controller
 
         $purchaseOrders = $query->latest()->paginate(15)->withQueryString();
         $suppliers = Supplier::orderBy('name')->get();
+        $products = Product::with('category')->orderBy('name')->get();
 
         $totalOrders = PurchaseOrder::count();
         $pendingOrders = PurchaseOrder::where('status', 'pending')->count();
@@ -46,6 +47,7 @@ class PurchaseOrderController extends Controller
         return view('purchase-orders.index', compact(
             'purchaseOrders',
             'suppliers',
+            'products',
             'search',
             'status',
             'supplier',
@@ -243,9 +245,16 @@ class PurchaseOrderController extends Controller
             return back()->with('error', 'PO yang sudah diterima tidak bisa dibatalkan.');
         }
         $purchaseOrder->update(['status' => 'cancelled']);
-        ActivityLog::log('deleted', "PO '{$purchaseOrder->po_number}' dibatalkan", $purchaseOrder);
+        ActivityLog::log('deleted', "PO '{$purchaseOrder->po_number}' dibatalkan", $purchaseOrder, 'PurchaseOrder');
 
         Alert::success('Berhasil', 'PO berhasil dibatalkan.');
         return back();
+    }
+
+    public function print(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->load(['supplier', 'user', 'details.product.category']);
+        $storeProfile = \App\Models\StoreProfile::first();
+        return view('purchase-orders.print', compact('purchaseOrder', 'storeProfile'));
     }
 }

@@ -202,7 +202,7 @@ class ReportController extends Controller
         $customerId = $request->input('customer_id');
 
         // Query dasar
-        $query = Transaction::with(['customer', 'items.product'])
+        $query = Transaction::with(['customer', 'items.product', 'paymentMethod'])
             ->whereBetween('order_date', [$startDate, $endDate]);
 
         // Filter status
@@ -221,7 +221,29 @@ class ReportController extends Controller
         // Hitung statistik
         $totalOrders = $orders->count();
         $totalRevenue = $orders->sum('total_amount');
+        $totalDiscount = $orders->sum('discount_amount');
         $completedOrders = $orders->where('status', 'completed')->count();
+        $averageOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+
+        // Data Grafik: Tren Penjualan
+        $chartData = $this->getSalesTrendData($startDate, $endDate);
+
+        // Data Grafik: Metode Pembayaran
+        $paymentMethodData = $orders->groupBy('payment_method_id')->map(function ($items) {
+            return [
+                'name' => $items->first()->paymentMethod->name ?? 'Unknown',
+                'total' => $items->sum('total_amount')
+            ];
+        })->values();
+
+        // Produk Terlaris (Top 5)
+        $topProducts = \App\Models\TransactionItem::whereIn('transaction_id', $orders->pluck('id'))
+            ->select('product_id', \DB::raw('SUM(quantity) as total_qty'), \DB::raw('SUM(subtotal) as total_sales'))
+            ->groupBy('product_id')
+            ->orderBy('total_qty', 'desc')
+            ->take(5)
+            ->with('product')
+            ->get();
 
         return view('reports.orders', compact(
             'orders',
@@ -232,7 +254,72 @@ class ReportController extends Controller
             'customerId',
             'totalOrders',
             'totalRevenue',
-            'completedOrders'
+            'totalDiscount',
+            'completedOrders',
+            'averageOrderValue',
+            'chartData',
+            'paymentMethodData',
+            'topProducts'
+        ));
+    }
+
+    private function getSalesTrendData($startDate, $endDate)
+    {
+        $period = \Carbon\CarbonPeriod::create($startDate, $endDate);
+        $labels = [];
+        $sales = [];
+
+        $dailySales = Transaction::whereBetween('order_date', [$startDate, $endDate])
+            ->select(\DB::raw('DATE(order_date) as date'), \DB::raw('SUM(total_amount) as total'))
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
+        foreach ($period as $date) {
+            $formattedDate = $date->format('Y-m-d');
+            $labels[] = $date->format('d M');
+            $sales[] = $dailySales[$formattedDate] ?? 0;
+        }
+
+        return [
+            'labels' => $labels,
+            'sales' => $sales
+        ];
+    }
+
+    public function printOrders(Request $request)
+    {
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        $status = $request->input('status', 'all');
+        $customerId = $request->input('customer_id');
+
+        $query = Transaction::with(['customer', 'items.product'])
+            ->whereBetween('order_date', [$startDate, $endDate]);
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if ($customerId) {
+            $query->where('customer_id', $customerId);
+        }
+
+        $orders = $query->orderBy('order_date', 'desc')->get();
+        
+        $totalOrders = $orders->count();
+        $totalRevenue = $orders->sum('total_amount');
+        $completedOrders = $orders->where('status', 'completed')->count();
+        
+        $storeProfile = \App\Models\StoreProfile::first();
+
+        return view('reports.orders_print', compact(
+            'orders',
+            'startDate',
+            'endDate',
+            'totalOrders',
+            'totalRevenue',
+            'completedOrders',
+            'storeProfile'
         ));
     }
 

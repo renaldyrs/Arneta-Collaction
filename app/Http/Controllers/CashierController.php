@@ -27,6 +27,7 @@ class CashierController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
         $storeProfile = StoreProfile::first();
+        $printSetting = \App\Models\PrintSetting::first();
         $paymentMethods = PaymentMethod::all();
         $categories = Category::all();
         $activeShift = Shift::getActiveShift(auth()->id());
@@ -36,6 +37,7 @@ class CashierController extends Controller
             'products',
             'paymentMethods',
             'storeProfile',
+            'printSetting',
             'categories',
             'activeShift',
             'activeDiscounts'
@@ -226,21 +228,24 @@ class CashierController extends Controller
     {
         $transaction = Transaction::with(['details.product', 'paymentMethod', 'customer'])->findOrFail($id);
         $storeProfile = StoreProfile::first();
-        return view('cashier.print', compact('transaction', 'storeProfile'));
+        $printSetting = \App\Models\PrintSetting::first();
+        return view('cashier.print', compact('transaction', 'storeProfile', 'printSetting'));
     }
 
     public function invoice($id)
     {
         $transaction = Transaction::with(['details.product', 'paymentMethod', 'customer', 'discount'])->findOrFail($id);
         $storeProfile = StoreProfile::first();
-        return view('cashier.invoice', compact('transaction', 'storeProfile'));
+        $printSetting = \App\Models\PrintSetting::first();
+        return view('cashier.invoice', compact('transaction', 'storeProfile', 'printSetting'));
     }
 
     public function printInvoice($id)
     {
         $transaction = Transaction::with(['details.product', 'paymentMethod', 'customer'])->findOrFail($id);
         $storeProfile = StoreProfile::first();
-        return view('cashier.print-invoice', compact('transaction', 'storeProfile'));
+        $printSetting = \App\Models\PrintSetting::first();
+        return view('cashier.print-invoice', compact('transaction', 'storeProfile', 'printSetting'));
     }
 
     public function orders()
@@ -255,19 +260,21 @@ class CashierController extends Controller
     {
         $transaction = Transaction::with(['details.product', 'paymentMethod', 'user', 'customer', 'discount'])->findOrFail($id);
         $storeProfile = StoreProfile::first();
-        return view('cashier.print', compact('transaction', 'storeProfile'))->with('receipt', true);
+        $printSetting = \App\Models\PrintSetting::first();
+        return view('cashier.print', compact('transaction', 'storeProfile', 'printSetting'))->with('receipt', true);
     }
 
     public function showReceipt($id)
     {
         $transaction = Transaction::with(['details.product', 'paymentMethod', 'user', 'customer', 'discount'])->findOrFail($id);
         $storeProfile = StoreProfile::first();
-
+        $printSetting = \App\Models\PrintSetting::first();
+ 
         if (request()->wantsJson() || request()->ajax()) {
-            return view('cashier.receipt-content', compact('transaction', 'storeProfile'))->render();
+            return view('cashier.receipt-content', compact('transaction', 'storeProfile', 'printSetting'))->render();
         }
-
-        return view('cashier.receipt', compact('transaction', 'storeProfile'));
+ 
+        return view('cashier.receipt', compact('transaction', 'storeProfile', 'printSetting'));
     }
 
     public function addToCart(Request $request)
@@ -289,5 +296,86 @@ class CashierController extends Controller
                 'image' => $product->image ? asset('storage/' . $product->image) : null,
             ]
         ]);
+    }
+
+    public function holdCart(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $pending = \App\Models\PendingTransaction::create([
+                'cart_name' => $request->cart_name ?: 'Antrian #' . ((\App\Models\PendingTransaction::whereDate('created_at', now())->count()) + 1),
+                'user_id' => auth()->id(),
+                'customer_id' => $request->customer_id,
+                'payment_method_id' => $request->payment_method_id,
+                'discount_id' => $request->discount_id,
+                'total_amount' => $request->total_amount,
+                'notes' => $request->notes,
+            ]);
+
+            foreach ($request->items as $item) {
+                $pending->details()->create([
+                    'product_id' => $item['id'],
+                    'quantity' => $item['quantity'],
+                    'size' => $item['size'] ?? null,
+                    'price' => $item['price'],
+                    'subtotal' => $item['price'] * $item['quantity'],
+                ]);
+            }
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Pesanan berhasil ditahan']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Hold Cart Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menahan pesanan: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function getHoldCarts()
+    {
+        $carts = \App\Models\PendingTransaction::with('details.product', 'customer')
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
+        return response()->json(['success' => true, 'carts' => $carts]);
+    }
+
+    public function resumeCart($id)
+    {
+        try {
+            $cart = \App\Models\PendingTransaction::with('details.product')->findOrFail($id);
+            $cartData = [
+                'customer_id' => $cart->customer_id,
+                'discount_id' => $cart->discount_id,
+                'notes' => $cart->notes,
+                'items' => $cart->details->map(function($detail) {
+                    return [
+                        'id' => $detail->product_id,
+                        'name' => $detail->product->name,
+                        'price' => (float)$detail->price,
+                        'quantity' => (int)$detail->quantity,
+                        'size' => $detail->size,
+                        'image' => $detail->product->image ? asset('storage/' . $detail->product->image) : null,
+                        'stock' => (int)$detail->product->stock,
+                    ];
+                })
+            ];
+            
+            $cart->delete();
+            return response()->json(['success' => true, 'cart' => $cartData]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal memanggil pesanan: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function removeHoldCart($id)
+    {
+        try {
+            \App\Models\PendingTransaction::findOrFail($id)->delete();
+            return response()->json(['success' => true, 'message' => 'Antrian berhasil dihapus']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus antrian'], 500);
+        }
     }
 }

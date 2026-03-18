@@ -58,7 +58,7 @@
                     <input type="text" name="search" value="{{ $search }}" placeholder="Cari nama, telepon..."
                         class="pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 dark:text-white focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 w-52">
                 </div>
-                @if($search)
+                @if ($search)
                     <a href="{{ route('customers.index') }}"
                         class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <i class="fas fa-times"></i>
@@ -92,47 +92,47 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($customers as $c)
-                        <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors" id="cust-row-{{ $c->id }}">
+                    @forelse ($customers as $item)
+                        <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors" id="cust-row-{{ $item->id }}">
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
                                         style="background: linear-gradient(135deg, #0d9373, #6366f1);">
-                                        {{ strtoupper(substr($c->name, 0, 1)) }}
+                                        {{ strtoupper(substr($item->name, 0, 1)) }}
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-gray-800 dark:text-white">{{ $c->name }}</p>
-                                        <p class="text-xs text-gray-400 truncate max-w-[160px]">{{ $c->address ?? '—' }}</p>
+                                        <p class="font-semibold text-gray-800 dark:text-white">{{ $item->name }}</p>
+                                        <p class="text-xs text-gray-400 truncate max-w-[160px]">{{ $item->address ?? '—' }}</p>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-5 py-3.5">
-                                <p class="text-gray-700 dark:text-gray-300 text-xs">{{ $c->phone ?? '—' }}</p>
-                                <p class="text-xs text-gray-400">{{ $c->email ?? '—' }}</p>
+                                <p class="text-gray-700 dark:text-gray-300 text-xs">{{ $item->phone ?? '—' }}</p>
+                                <p class="text-xs text-gray-400">{{ $item->email ?? '—' }}</p>
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                <span class="badge badge-blue">{{ $c->transactions_count ?? 0 }}×</span>
+                                <span class="badge badge-blue">{{ $item->transactions_count ?? 0 }}×</span>
                             </td>
                             <td class="px-5 py-3.5 text-right font-semibold text-gray-800 dark:text-white">
-                                Rp {{ number_format($c->total_spent, 0, ',', '.') }}
+                                Rp {{ number_format($item->total_spent, 0, ',', '.') }}
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                <span class="badge badge-yellow">⭐ {{ number_format($c->points) }}</span>
+                                <span class="badge badge-yellow">⭐ {{ number_format($item->points) }}</span>
                             </td>
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center justify-center gap-1.5">
-                                    <a href="{{ route('customers.show', $c) }}"
+                                    <a href="{{ route('customers.show', $item) }}"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                         title="Detail">
                                         <i class="fas fa-eye text-xs"></i>
                                     </a>
                                     <button
-                                        onclick="openEditModal({{ $c->id }}, {{ json_encode(['name' => $c->name, 'phone' => $c->phone, 'email' => $c->email, 'address' => $c->address]) }})"
+                                        onclick="openEditModal({{ $item->id }}, {{ json_encode(['name' => $item->name, 'phone' => $item->phone, 'email' => $item->email, 'address' => $item->address]) }})"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
                                         title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
-                                    <button onclick="deleteCustomer({{ $c->id }}, '{{ addslashes($c->name) }}')"
+                                    <button onclick="deleteCustomer({{ $item->id }}, '{{ addslashes($item->name) }}')"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                         title="Hapus">
                                         <i class="fas fa-trash text-xs"></i>
@@ -153,7 +153,7 @@
                 </tbody>
             </table>
         </div>
-        @if($customers->hasPages())
+        @if ($customers->hasPages())
             <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                 {{ $customers->links() }}
             </div>

@@ -13,79 +13,47 @@
     </div>
 
     {{-- Category List --}}
-    <div
-        class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                <i class="fas fa-layer-group text-emerald-500"></i> Daftar Kategori
-            </h3>
-            <span class="badge badge-green" id="categoryCount">{{ $categories->total() }} kategori</span>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-50/80 dark:bg-gray-700/30">
-                        <th
-                            class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">
-                            No</th>
-                        <th
-                            class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Nama Kategori</th>
-                        <th
-                            class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Kode</th>
-                        <th
-                            class="px-5 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">
-                            Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50" id="categoryTableBody">
-                    @forelse($categories as $category)
-                        <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors"
-                            id="cat-row-{{ $category->id }}">
-                            <td class="px-5 py-3.5 text-gray-400 text-xs">{{ $loop->iteration }}</td>
-                            <td class="px-5 py-3.5">
-                                <div class="flex items-center gap-2.5">
-                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-emerald-700"
-                                        style="background: rgba(16,185,129,0.12);">
-                                        {{ strtoupper(substr($category->name, 0, 1)) }}
-                                    </div>
-                                    <span class="font-semibold text-gray-800 dark:text-white">{{ $category->name }}</span>
-                                </div>
-                            </td>
-                            <td class="px-5 py-3.5">
-                                <code class="badge badge-blue font-mono">{{ $category->code }}</code>
-                            </td>
-                            <td class="px-5 py-3.5">
-                                <div class="flex items-center justify-center gap-1.5">
-                                    <button
-                                        onclick="openEditModal({{ $category->id }}, '{{ addslashes($category->name) }}', '{{ addslashes($category->code) }}')"
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
-                                        title="Edit">
-                                        <i class="fas fa-edit text-xs"></i>
-                                    </button>
-                                    <button onclick="deleteCategory({{ $category->id }})"
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                        title="Hapus">
-                                        <i class="fas fa-trash text-xs"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr id="emptyRow">
-                            <td colspan="4" class="px-5 py-10 text-center text-gray-400">
-                                <i class="fas fa-layer-group text-3xl mb-2 block opacity-20"></i>
-                                <p class="text-sm">Belum ada kategori</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
-            {{ $categories->links('vendor.tailwind') }}
-        </div>
+    <div id="categoryContainer" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-10 gap-3">
+        @forelse ($categories as $item)
+            <div class="group relative bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700/50 hover:shadow-md transition-all hover:-translate-y-1"
+                 id="cat-row-{{ $item->id }}">
+                
+                {{-- Actions (Hover) --}}
+                <div class="absolute top-1 right-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <button onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ addslashes($item->code) }}')"
+                            class="w-6 h-6 flex items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition-colors">
+                        <i class="fas fa-edit text-[9px]"></i>
+                    </button>
+                    <button onclick="deleteCategory({{ $item->id }})"
+                            class="w-6 h-6 flex items-center justify-center rounded-md bg-red-50 dark:bg-red-900/40 text-red-500 hover:bg-red-100 transition-colors">
+                        <i class="fas fa-trash text-[9px]"></i>
+                    </button>
+                </div>
+
+                {{-- Content --}}
+                <div class="flex flex-col items-center text-center">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-emerald-700 dark:text-emerald-400 mb-2"
+                         style="background: rgba(16,185,129,0.12);">
+                        {{ strtoupper(substr($item->name, 0, 1)) }}
+                    </div>
+                    <h3 class="text-[11px] font-bold text-gray-800 dark:text-white leading-tight truncate w-full px-0.5" title="{{ $item->name }}">
+                        {{ $item->name }}
+                    </h3>
+                    <code class="mt-0.5 px-1.5 py-0 text-[9px] bg-gray-50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 font-mono rounded-sm uppercase tracking-tighter">
+                        {{ $item->code }}
+                    </code>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full py-16 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400">
+                <i class="fas fa-layer-group text-4xl mb-3 opacity-20"></i>
+                <p class="text-sm">Belum ada kategori</p>
+            </div>
+        @endforelse
+    </div>
+
+    <div class="mt-8">
+        {{ $categories->links('vendor.tailwind') }}
     </div>
 
     {{-- ═══════════════════════ MODAL CREATE ═══════════════════════ --}}

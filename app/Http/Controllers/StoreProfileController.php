@@ -34,11 +34,6 @@ class StoreProfileController extends Controller
         return view('store-profile.create');
     }
 
-    public function edit()
-    {
-        $profile = StoreProfile::firstOrFail();
-        return view('store-profile.edit', compact('profile'));
-    }
 
     public function store(Request $request)
     {
@@ -104,11 +99,28 @@ class StoreProfileController extends Controller
 
             $profile->save();
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Profile toko berhasil diperbarui.',
+                    'profile' => $profile,
+                    'logo_url' => $profile->logo ? asset('storage/' . $profile->logo) : null
+                ]);
+            }
+
             return redirect()->route('store-profile.index')
                 ->with('success', 'Profile toko berhasil diperbarui.');
 
         } catch (\Exception $e) {
             Log::error('Store profile update error: ' . $e->getMessage());
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui profile toko: ' . $e->getMessage()
+                ], 500);
+            }
+
             return back()
                 ->withInput()
                 ->with('error', 'Gagal memperbarui profile toko: ' . $e->getMessage());

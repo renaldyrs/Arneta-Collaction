@@ -26,11 +26,12 @@
                         {{ number_format($totalExpenses, 0, ',', '.') }}</p>
                 </div>
                 <div class="space-y-3">
-                    @foreach($categories as $cat)
+                    @foreach ($categories as $cat)
                         @php
                             $total = \Illuminate\Support\Facades\DB::table('expenses')->where('category', $cat)->sum('amount');
                             $pct = $totalExpenses > 0 ? round(($total / $totalExpenses) * 100) : 0;
-                            $clr = match ($cat) { 'Bahan Baku' => '#14b890', 'Operasional' => '#6366f1', 'Gaji' => '#f59e0b', default => '#9ca3af'};
+                            $clrMap = ['Bahan Baku' => '#14b890', 'Operasional' => '#6366f1', 'Gaji' => '#f59e0b'];
+                            $clr = $clrMap[$cat] ?? '#9ca3af';
                         @endphp
                         <div>
                             <div class="flex justify-between text-xs mb-1">
@@ -79,26 +80,26 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                            @forelse($expenses as $expense)
+                            @forelse ($expenses as $item)
                                 <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors"
-                                    id="exp-row-{{ $expense->id }}">
+                                    id="exp-row-{{ $item->id }}">
                                     <td class="px-5 py-3.5">
                                         <p class="font-semibold text-gray-800 dark:text-white text-xs">
-                                            {{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}</p>
+                                            {{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}</p>
                                     </td>
                                     <td class="px-5 py-3.5">
                                         @php $badgeMap = ['Bahan Baku' => 'badge-green', 'Operasional' => 'badge-purple', 'Gaji' => 'badge-yellow', 'Lainnya' => 'badge-gray']; @endphp
                                         <span
-                                            class="badge {{ $badgeMap[$expense->category] ?? 'badge-gray' }}">{{ $expense->category }}</span>
+                                            class="badge {{ $badgeMap[$item->category] ?? 'badge-gray' }}">{{ $item->category }}</span>
                                     </td>
                                     <td class="px-5 py-3.5 text-gray-600 dark:text-gray-400 max-w-xs truncate">
-                                        {{ $expense->description ?? '—' }}</td>
+                                        {{ $item->description ?? '—' }}</td>
                                     <td class="px-5 py-3.5 text-right">
                                         <span class="font-bold text-red-600 dark:text-red-400">- Rp
-                                            {{ number_format($expense->amount, 0, ',', '.') }}</span>
+                                            {{ number_format($item->amount, 0, ',', '.') }}</span>
                                     </td>
                                     <td class="px-5 py-3.5 text-center">
-                                        <button onclick="deleteExpense({{ $expense->id }})"
+                                        <button onclick="deleteExpense({{ $item->id }})"
                                             class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mx-auto">
                                             <i class="fas fa-trash text-xs"></i>
                                         </button>

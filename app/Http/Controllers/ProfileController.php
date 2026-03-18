@@ -24,13 +24,7 @@ class ProfileController extends Controller
         return view('profile.show', compact('user'));
     }
 
-    // Menampilkan form edit profil
-    public function edit()
-    {
-        return view('profile.edit');
-    }
 
-    // Mengupdate profil user
  
 
     // Mengupdate profil user
@@ -61,6 +55,14 @@ class ProfileController extends Controller
         // Update data user
         $user->update($data);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Profil berhasil diperbarui.',
+                'user' => $user
+            ]);
+        }
+
         return redirect()->route('profile.show')->with('success', 'Profil berhasil diperbarui.');
     }
 
@@ -77,6 +79,12 @@ class ProfileController extends Controller
 
         // Cek password saat ini
         if (!Hash::check($request->current_password, $user->password)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['current_password' => ['Password saat ini tidak valid.']]
+                ], 422);
+            }
             return back()->withErrors(['current_password' => 'Password saat ini tidak valid.']);
         }
 
@@ -84,6 +92,13 @@ class ProfileController extends Controller
         $user->update([
             'password' => Hash::make($request->password),
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password berhasil diperbarui.'
+            ]);
+        }
 
         return redirect()->route('profile.show')->with('success', 'Password berhasil diperbarui.');
     }

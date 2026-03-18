@@ -15,7 +15,7 @@
                         class="font-mono text-xl font-bold text-gray-800 dark:text-white">{{ $shift->shift_number }}</span>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Kasir: {{ $shift->user->name }}</p>
                 </div>
-                @if($shift->status === 'open')
+                @if ($shift->status === 'open')
                     <span
                         class="px-4 py-2 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-sm font-semibold animate-pulse">●
                         Shift Aktif</span>
@@ -42,7 +42,7 @@
                     <p class="text-lg font-bold text-green-600 mt-1">Rp
                         {{ number_format($shift->transactions->sum('total_amount'), 0, ',', '.') }}</p>
                 </div>
-                @if($shift->status === 'closed')
+                @if ($shift->status === 'closed')
                     <div
                         class="{{ $shift->cash_difference >= 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-red-50 dark:bg-red-900/20' }} rounded-xl p-4 text-center">
                         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">Selisih Kas</p>
@@ -61,11 +61,11 @@
             </div>
 
             <!-- Revenue by Payment Method -->
-            @if($revenueByPayment->isNotEmpty())
+            @if ($revenueByPayment->isNotEmpty())
                 <div class="mb-6">
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Revenue per Metode Pembayaran</h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        @foreach($revenueByPayment as $payment)
+                        @foreach ($revenueByPayment as $payment)
                             <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
                                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ $payment['name'] }}</p>
                                 <p class="font-bold text-gray-800 dark:text-white text-sm mt-0.5">Rp
@@ -78,7 +78,7 @@
             @endif
 
             <!-- Tutup Shift -->
-            @if($shift->status === 'open' && ($shift->user_id === auth()->id() || auth()->user()->role === 'admin'))
+            @if ($shift->status === 'open' && ($shift->user_id === auth()->id() || auth()->user()->role === 'admin'))
                 <div class="border-t border-gray-100 dark:border-gray-700 pt-4 mt-4">
                     <h3 class="font-semibold text-gray-800 dark:text-white mb-4">Tutup Shift</h3>
                     <form action="{{ route('shifts.close', $shift) }}" method="POST" class="space-y-3">
@@ -108,7 +108,7 @@
                 </div>
             @endif
 
-            @if($shift->status === 'closed')
+            @if ($shift->status === 'closed')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 mt-2">
                     <div>
                         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">Kas yang Diharapkan</p>
@@ -120,7 +120,7 @@
                         <p class="font-bold text-gray-800 dark:text-white">Rp
                             {{ number_format($shift->closing_cash, 0, ',', '.') }}</p>
                     </div>
-                    @if($shift->closing_notes)
+                    @if ($shift->closing_notes)
                         <div class="md:col-span-2">
                             <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">Catatan Penutupan</p>
                             <p class="text-gray-700 dark:text-gray-300 text-sm mt-1">{{ $shift->closing_notes }}</p>
@@ -131,14 +131,14 @@
         </div>
 
         <!-- Transaksi dalam Shift ini -->
-        @if($shift->transactions->isNotEmpty())
+        @if ($shift->transactions->isNotEmpty())
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <div class="p-4 border-b border-gray-100 dark:border-gray-700">
                     <h3 class="font-semibold text-gray-800 dark:text-white">Transaksi dalam Shift ini
                         ({{ $shift->transactions->count() }})</h3>
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-700 max-h-80 overflow-y-auto">
-                    @foreach($shift->transactions as $trx)
+                    @foreach ($shift->transactions as $trx)
                         <div class="px-4 py-3 flex items-center justify-between">
                             <div>
                                 <p class="font-medium text-gray-800 dark:text-white text-sm">{{ $trx->invoice_number }}</p>

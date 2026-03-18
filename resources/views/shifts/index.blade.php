@@ -6,7 +6,7 @@
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manajemen Shift</h1>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Kelola shift kasir dan rekonsiliasi kas</p>
         </div>
-        @if(!$activeShift)
+        @if (!$activeShift)
             <button onclick="document.getElementById('openShiftModal').classList.remove('hidden')"
                 class="btn-primary bg-emerald-500 hover:bg-emerald-600">
                 <i class="fas fa-play-circle"></i> Buka Shift
@@ -114,7 +114,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($shifts as $shift)
+                    @forelse ($shifts as $shift)
                         <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors">
                             <td class="px-5 py-3.5">
                                 <code
@@ -122,7 +122,7 @@
                             </td>
                             <td class="px-5 py-3.5 font-medium text-gray-800 dark:text-white">{{ $shift->user->name }}</td>
                             <td class="px-5 py-3.5 text-center">
-                                @if($shift->status === 'open')
+                                @if ($shift->status === 'open')
                                     <span class="badge badge-green"><span
                                             class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block mr-1"></span>
                                         Aktif</span>
@@ -139,7 +139,7 @@
                             <td class="px-5 py-3.5 text-right font-bold text-emerald-600 dark:text-emerald-400">Rp
                                 {{ number_format($shift->transactions_sum_total_amount ?? $shift->total_revenue ?? 0, 0, ',', '.') }}</td>
                             <td class="px-5 py-3.5 text-right">
-                                @if($shift->status === 'closed')
+                                @if ($shift->status === 'closed')
                                     <span
                                         class="font-bold {{ $shift->cash_difference >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
                                         {{ $shift->cash_difference >= 0 ? '+' : '' }}Rp
@@ -167,7 +167,7 @@
                 </tbody>
             </table>
         </div>
-        @if($shifts->hasPages())
+        @if ($shifts->hasPages())
             <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                 {{ $shifts->links() }}
             </div>

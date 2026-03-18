@@ -72,7 +72,7 @@
                         class="form-input pl-8 py-2 text-xs w-44">
                 </div>
                 <button type="submit" class="btn-secondary py-2 px-3 text-xs"><i class="fas fa-search"></i></button>
-                @if(request('search'))
+                @if (request('search'))
                     <a href="{{ route('users.index') }}" class="btn-secondary py-2 px-3 text-xs"><i
                             class="fas fa-times"></i></a>
                 @endif
@@ -117,7 +117,7 @@
                                     <div>
                                         <p class="font-semibold text-gray-800 dark:text-white text-sm">{{ $user->name }}</p>
                                         <p class="text-xs text-gray-400 sm:hidden">{{ $user->email }}</p>
-                                        @if($user->id === auth()->id())
+                                        @if ($user->id === auth()->id())
                                             <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
                                                 <i class="fas fa-circle text-[6px]"></i> Anda
                                             </span>
@@ -128,7 +128,7 @@
                             <td class="px-5 py-3.5 text-xs text-gray-500 dark:text-gray-400 hidden sm:table-cell">
                                 {{ $user->email }}</td>
                             <td class="px-5 py-3.5 text-center">
-                                @if($user->role === 'admin')
+                                @if ($user->role === 'admin')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold"
                                         style="background: rgba(99,102,241,0.1); color: #6366f1;">
                                         <i class="fas fa-user-shield text-[10px]"></i> Admin
@@ -150,7 +150,7 @@
                                         title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
-                                    @if($user->id !== auth()->id())
+                                    @if ($user->id !== auth()->id())
                                         <button onclick="deleteUser({{ $user->id }}, '{{ addslashes($user->name) }}')"
                                             class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                             title="Hapus">
@@ -170,7 +170,7 @@
                             <td colspan="5" class="px-5 py-10 text-center text-gray-400">
                                 <i class="fas fa-users text-3xl mb-2 block opacity-20"></i>
                                 <p class="text-sm">Tidak ada pengguna ditemukan</p>
-                                @if(request('search'))
+                                @if (request('search'))
                                     <a href="{{ route('users.index') }}"
                                         class="text-emerald-500 text-xs mt-1 inline-block hover:underline">Hapus filter</a>
                                 @endif
@@ -181,7 +181,7 @@
             </table>
         </div>
 
-        @if($users->hasPages())
+        @if ($users->hasPages())
             <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                 {{ $users->appends(request()->query())->links('vendor.tailwind') }}
             </div>

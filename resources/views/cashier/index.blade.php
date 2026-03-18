@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        $printSetting = \App\Models\PrintSetting::first();
+    @endphp
     <style>
         .notification {
             position: fixed;
@@ -49,14 +52,14 @@
         }
 
         .qty-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             border: 1.5px solid #e5e7eb;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 1.25rem;
             font-weight: 700;
             cursor: pointer;
             color: #374151;
@@ -64,6 +67,11 @@
             transition: all 0.15s;
             flex-shrink: 0;
             line-height: 1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .qty-btn:active {
+            transform: scale(0.92);
         }
 
         .qty-btn:hover {
@@ -119,9 +127,38 @@
             color: white !important;
             border-color: transparent !important;
         }
+
+        /* ── NOTIFICATION ── */
+        .notification {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            color: white;
+            z-index: 9999;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 280px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideInNotif 0.3s ease-out forwards;
+        }
+
+        .notification.success { background: rgba(16, 185, 129, 0.9); }
+        .notification.error   { background: rgba(239, 68, 68, 0.9); }
+        .notification.warning { background: rgba(245, 158, 11, 0.9); }
+        .notification.info    { background: rgba(59, 130, 246, 0.9); }
+
+        @keyframes slideInNotif {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
     </style>
 
-    <div class="min-h-screen" style="background: #f0f4f8;">
+    <div class="min-h-screen">
         <div class="container mx-auto px-4 py-6">
 
             {{-- Header --}}
@@ -130,12 +167,22 @@
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Kasir</h1>
                     <p class="text-sm text-gray-500 mt-0.5">Proses transaksi penjualan</p>
                 </div>
-                <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                    <i class="fas fa-user-circle text-emerald-500"></i>
-                    <span class="font-medium text-gray-700 dark:text-gray-300">{{ Auth::user()->name }}</span>
-                    <span class="text-gray-300">|</span>
-                    <i class="fas fa-clock text-emerald-500"></i>
-                    <span id="liveClock">{{ now()->format('d/m/Y H:i') }}</span>
+                <div class="flex items-center gap-3">
+                    <button id="fullScreenBtn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 transition-all" title="Layar Penuh">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button id="showHoldCartsBtn" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 transition-all hover:scale-105 h-10">
+                        <i class="fas fa-list-ul"></i> Antrian <span id="holdCartsCount" class="bg-emerald-600 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </button>
+                    <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 ml-2">
+                        <div class="hidden md:flex items-center gap-2">
+                            <i class="fas fa-user-circle text-emerald-500"></i>
+                            <span class="font-medium text-gray-700 dark:text-gray-300">{{ Auth::user()->name }}</span>
+                            <span class="text-gray-300">|</span>
+                        </div>
+                        <i class="fas fa-clock text-emerald-500"></i>
+                        <span id="liveClock" class="font-medium tabular-nums">{{ now()->format('d/m/Y H:i') }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -165,16 +212,16 @@
                                 <button
                                     class="category-btn active px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all"
                                     data-category="all">Semua</button>
-                                @foreach($categories as $cat)
+                                @foreach ($categories as $cat)
                                     <button
                                         class="category-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 border border-transparent hover:bg-gray-200 transition-all"
                                         data-category="{{ $cat->id }}">{{ $cat->name }}</button>
                                 @endforeach
                             </div>
                             {{-- Grid Produk --}}
-                            <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 overflow-y-auto max-h-[33rem] pr-1"
+                            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto max-h-[36rem] pr-1"
                                 id="productGrid">
-                                @foreach($products as $product)
+                                @foreach ($products as $product)
                                     <div class="product-card bg-white dark:bg-gray-700/80 p-3 rounded-xl border border-gray-100 dark:border-gray-600/50 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 transition-all cursor-pointer flex flex-col group select-none"
                                         data-id="{{ $product->id }}" data-name="{{ $product->name }}"
                                         data-price="{{ $product->price }}" data-stock="{{ $product->stock }}"
@@ -182,7 +229,7 @@
                                         data-sizes="{{ $product->sizes->map(fn($s) => ['name' => $s->name, 'stock' => $s->pivot->stock])->toJson() }}">
                                         <div
                                             class="h-28 bg-gray-50 dark:bg-gray-600/50 rounded-lg mb-2.5 overflow-hidden flex items-center justify-center relative">
-                                            @if($product->image)
+                                            @if ($product->image)
                                                 <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
                                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                                             @else
@@ -190,7 +237,7 @@
                                                     <i class="fas fa-box text-2xl text-gray-400"></i>
                                                 </div>
                                             @endif
-                                            @if($product->stock <= 0)
+                                            @if ($product->stock <= 0)
                                                 <div
                                                     class="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
                                                     <span
@@ -314,7 +361,7 @@
                                     (Opsional)</label>
                                 <select id="customerSelect" class="form-select w-full text-sm">
                                     <option value="">— Tanpa Pelanggan —</option>
-                                    @foreach(\App\Models\Customer::orderBy('name')->get() as $cust)
+                                    @foreach (\App\Models\Customer::orderBy('name')->get() as $cust)
                                         <option value="{{ $cust->id }}">{{ $cust->name }}</option>
                                     @endforeach
                                 </select>
@@ -327,7 +374,7 @@
                                     Pembayaran</label>
                                 <select id="paymentMethod" class="form-select w-full text-sm">
                                     <option value="">— Pilih Metode —</option>
-                                    @foreach($paymentMethods as $method)
+                                    @foreach ($paymentMethods as $method)
                                         <option value="{{ $method->id }}"
                                             data-cash="{{ (str_contains(strtolower($method->name), 'tunai') || str_contains(strtolower($method->name), 'cash')) ? '1' : '0' }}">
                                             {{ $method->name }}
@@ -376,8 +423,11 @@
                                 <button id="cancelBtn" class="btn-secondary py-3 justify-center text-sm">
                                     <i class="fas fa-times"></i> Batal
                                 </button>
+                                <button id="holdBtn" class="btn-secondary py-3 justify-center text-sm border-amber-200 dark:border-amber-900/50 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/10" disabled>
+                                    <i class="fas fa-pause"></i> Tahan
+                                </button>
                                 <button id="checkoutBtn"
-                                    class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                    class="col-span-2 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-1"
                                     style="background: linear-gradient(135deg, #0d9373, #059669); box-shadow: 0 4px 14px rgba(13,147,115,0.3);"
                                     disabled>
                                     <i class="fas fa-check-circle"></i> Bayar
@@ -387,6 +437,27 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Antrian (Hold Carts) --}}
+    <div id="holdCartsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-list-ul text-emerald-500"></i> Daftar Antrian (Tahan)
+                </h3>
+                <button onclick="document.getElementById('holdCartsModal').classList.add('hidden')" class="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            <div id="holdCartsBody" class="p-4 overflow-y-auto flex-1 bg-gray-50 dark:bg-gray-900/50 space-y-3">
+                {{-- Dynamic Content --}}
+                <div class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-emerald-500 text-2xl"></i>
+                    <p class="text-sm text-gray-400 mt-2">Memuat antrian...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -748,6 +819,7 @@
             const payment = parseFloat(paymentAmountEl.value) || 0;
             const payOk   = !isCash || payment >= total;
             checkoutBtn.disabled = !(cart.length > 0 && paymentMethodEl.value && payOk);
+            holdBtn.disabled = cart.length === 0;
         }
 
         // ── BATAL / RESET ─────────────────────────────────────
@@ -813,6 +885,28 @@
                 renderCart();
 
                 if (data.transaction?.id) {
+                    @if ($printSetting && $printSetting->auto_print_receipt)
+                        if ("{{ $printSetting->connection_type }}" === 'qz') {
+                            ArnetaPrinter.printHtml(`/cashier/print/${data.transaction.id}`, {
+                                printerName: "{{ $printSetting->qz_printer_name }}",
+                                autoCut: {{ $printSetting->auto_cut ? 'true' : 'false' }},
+                                width: {{ $printSetting->paper_width }}
+                            }).then(success => {
+                                if (success) notify('Mencetak struk (Direct)...', 'info');
+                                else notify('Gagal cetak direct, silakan cetak manual', 'warning');
+                            });
+                        } else {
+                            const win = window.open(`/cashier/print/${data.transaction.id}`, '_blank', 'width=420,height=620');
+                            if (win) {
+                                win.onload = () => {
+                                    win.focus();
+                                    win.print();
+                                    // if ({{ $printSetting->auto_print_receipt ? 'true' : 'false' }}) setTimeout(() => win.close(), 1000);
+                                };
+                            }
+                            notify('Mencetak struk...', 'info');
+                        }
+                    @endif
                     showReceiptModal(data.transaction.id);
                 } else {
                     setTimeout(() => location.reload(), 2500);
@@ -949,8 +1043,184 @@
             scannerModal.classList.add('hidden');
         }
 
+        // ── HOLD CART (ANTRIAN) ──────────────────────────────
+        const holdBtn            = document.getElementById('holdBtn');
+        const holdCartsModal     = document.getElementById('holdCartsModal');
+        const holdCartsBody      = document.getElementById('holdCartsBody');
+        const holdCartsCount     = document.getElementById('holdCartsCount');
+        const showHoldCartsBtn   = document.getElementById('showHoldCartsBtn');
+
+        async function loadHoldCartsCount() {
+            try {
+                const res = await fetch('/api/v1/cashier/hold-carts', { headers: { 'X-Requested-With':'XMLHttpRequest' } });
+                const data = await res.json();
+                if (data.success) {
+                    const count = data.carts.length;
+                    holdCartsCount.textContent = count;
+                    holdCartsCount.classList.toggle('hidden', count === 0);
+                }
+            } catch(e) {}
+        }
+
+        holdBtn.addEventListener('click', async function() {
+            if (cart.length === 0) return;
+            
+            Swal.fire({
+                title: 'Tahan Pesanan',
+                input: 'text',
+                inputLabel: 'Nama Antrian (Opsional)',
+                inputPlaceholder: 'Contoh: Ibu Ani / Meja 5',
+                showCancelButton: true,
+                confirmButtonText: 'Tahan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#0d9373',
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const cartName = result.value;
+                    const body = {
+                        cart_name: cartName,
+                        items: cart,
+                        total_amount: parseRp(totalEl.textContent),
+                        customer_id: document.getElementById('customerSelect').value || null,
+                        discount_id: activeDiscount?.id || null,
+                        notes: ""
+                    };
+
+                    try {
+                        holdBtn.disabled = true;
+                        const res = await fetch('/api/v1/cashier/hold', {
+                            method: 'POST',
+                            headers: { 'Content-Type':'application/json', 'Accept':'application/json', 'X-CSRF-TOKEN':getCsrf() },
+                            body: JSON.stringify(body)
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            notify('Antrian berhasil disimpan', 'success');
+                            cart = []; activeDiscount = null;
+                            document.getElementById('discountCode').value = '';
+                            document.getElementById('discountMsg').classList.add('hidden');
+                            renderCart();
+                            loadHoldCartsCount();
+                        } else {
+                            notify(data.message, 'error');
+                        }
+                    } catch(e) {
+                        notify('Gagal menyimpan antrian', 'error');
+                    } finally {
+                        holdBtn.disabled = false;
+                    }
+                }
+            });
+        });
+
+        showHoldCartsBtn.addEventListener('click', loadHoldCarts);
+
+        async function loadHoldCarts() {
+            holdCartsModal.classList.remove('hidden');
+            holdCartsBody.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-emerald-500 text-2xl"></i></div>';
+            
+            try {
+                const res = await fetch('/api/v1/cashier/hold-carts', { headers: { 'X-Requested-With':'XMLHttpRequest' } });
+                const data = await res.json();
+                if (data.success) {
+                    if (data.carts.length === 0) {
+                        holdCartsBody.innerHTML = '<p class="text-center py-10 text-gray-400 text-sm">Tidak ada antrian tertunda</p>';
+                        return;
+                    }
+                    holdCartsBody.innerHTML = data.carts.map(c => `
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <p class="font-bold text-gray-800 dark:text-white text-sm truncate">${c.cart_name || 'Tanpa Nama'}</p>
+                                <p class="text-[10px] text-gray-400">${c.details.length} item • ${fmtRp(c.total_amount)}</p>
+                                <p class="text-[9px] text-gray-400 mt-1">${new Date(c.created_at).toLocaleString('id-ID')}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="resumeCart(${c.id})" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-colors">Panggil</button>
+                                <button onclick="removeHoldCart(${c.id})" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) {
+                holdCartsBody.innerHTML = '<p class="text-center text-red-500 py-10 text-sm">Gagal memuat data</p>';
+            }
+        }
+
+        window.resumeCart = async function(id) {
+            if (cart.length > 0) {
+                const confirm = await Swal.fire({
+                    title: 'Panggil Antrian?',
+                    text: 'Keranjang saat ini akan digantikan oleh antrian yang dipanggil.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Panggil',
+                    cancelButtonColor: '#d33',
+                });
+                if (!confirm.isConfirmed) return;
+            }
+
+            try {
+                const res = await fetch(`/api/v1/cashier/resume/${id}`, { headers: { 'X-Requested-With':'XMLHttpRequest' } });
+                const data = await res.json();
+                if (data.success) {
+                    cart = data.cart.items;
+                    activeDiscount = null; // Reset discount for safety or we could re-validate
+                    document.getElementById('customerSelect').value = data.cart.customer_id || '';
+                    document.getElementById('discountCode').value = '';
+                    document.getElementById('discountMsg').classList.add('hidden');
+                    
+                    holdCartsModal.classList.add('hidden');
+                    renderCart();
+                    loadHoldCartsCount();
+                    notify('Antrian berhasil dipanggil', 'success');
+                }
+            } catch(e) { notify('Gagal memanggil antrian', 'error'); }
+        }
+
+        window.removeHoldCart = async function(id) {
+            Swal.fire({
+                title: 'Hapus Antrian?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Ya, Hapus'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch(`/api/v1/cashier/remove-hold/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'X-CSRF-TOKEN':getCsrf(), 'X-Requested-With':'XMLHttpRequest' }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            loadHoldCarts();
+                            loadHoldCartsCount();
+                            notify('Antrian dihapus', 'info');
+                        }
+                    } catch(e) { notify('Gagal menghapus', 'error'); }
+                }
+            });
+        }
+
+        // ── FULLSCREEN ────────────────────────────────────────
+        const fsBtn = document.getElementById('fullScreenBtn');
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    notify(`Gagal masuk mode layar penuh: ${err.message}`, 'error');
+                });
+                fsBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    fsBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+        });
+
         // ── INIT ──────────────────────────────────────────────
         renderCart();
+        loadHoldCartsCount();
     });
     </script>
 @endsection

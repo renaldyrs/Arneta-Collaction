@@ -10,14 +10,14 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
         <form action="{{ isset($discount) ? route('discounts.update', $discount) : route('discounts.store') }}" method="POST" class="space-y-5">
             @csrf
-            @if(isset($discount)) @method('PUT') @endif
+            @if (isset($discount)) @method('PUT') @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Diskon <span class="text-red-500">*</span></label>
                     <input type="text" name="name" value="{{ old('name', $discount->name ?? '') }}" required
                         class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                    @error('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error ('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
@@ -26,7 +26,7 @@
                         class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm uppercase"
                         style="text-transform: uppercase;">
                     <p class="text-xs text-gray-400 mt-1">Kosongkan jika diskon otomatis (tanpa kode)</p>
-                    @error('code')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error ('code')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
@@ -45,7 +45,7 @@
                         <input type="number" name="value" value="{{ old('value', $discount->value ?? '') }}" required step="0.01" min="0.01"
                             class="w-full pl-8 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
                     </div>
-                    @error('value')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error ('value')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
@@ -73,7 +73,7 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Berakhir</label>
                     <input type="date" name="end_date" value="{{ old('end_date', isset($discount->end_date) ? $discount->end_date->format('Y-m-d') : '') }}"
                         class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                    @error('end_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error ('end_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
             </div>
 

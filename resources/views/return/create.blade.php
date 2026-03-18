@@ -13,7 +13,7 @@
                 <label class="block text-gray-700">Produk</label>
                 <select name="product_id" class="w-full border rounded p-2" required>
                     <option value="">Pilih Produk</option>
-                    @foreach($transaction->details as $detail)
+                    @foreach ($transaction->details as $detail)
                     <option value="{{ $detail->product_id }}">
                         {{ $detail->product->name }} (Beli: {{ $detail->quantity }})
                     </option>

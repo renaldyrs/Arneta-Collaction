@@ -18,13 +18,13 @@
             </div>
             <select name="action" class="form-select text-sm">
                 <option value="">Semua Aksi</option>
-                @foreach($actions as $act)
+                @foreach ($actions as $act)
                     <option value="{{ $act }}" {{ $action === $act ? 'selected' : '' }}>{{ ucfirst($act) }}</option>
                 @endforeach
             </select>
             <select name="user_id" class="form-select text-sm">
                 <option value="">Semua User</option>
-                @foreach($users as $u)
+                @foreach ($users as $u)
                     <option value="{{ $u->id }}" {{ $userId == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
                 @endforeach
             </select>
@@ -62,46 +62,46 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($logs as $log)
+                    @forelse ($logs as $item)
                         @php
-                            $actionBadge = match ($log->action) {
-                                'created' => 'badge-green',
-                                'updated' => 'badge-blue',
-                                'deleted' => 'badge-red',
-                                'login' => 'badge-purple',
-                                'logout' => 'badge-gray',
-                                default => 'badge-gray'
-                            };
+                            $actionBadge = 'badge-gray';
+                            switch ($item->action) {
+                                case 'created': $actionBadge = 'badge-green'; break;
+                                case 'updated': $actionBadge = 'badge-blue'; break;
+                                case 'deleted': $actionBadge = 'badge-red'; break;
+                                case 'login': $actionBadge = 'badge-purple'; break;
+                                case 'logout': $actionBadge = 'badge-gray'; break;
+                            }
                         @endphp
                         <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors">
                             <td class="px-5 py-3.5 text-xs text-gray-500 whitespace-nowrap">
-                                <p class="font-medium text-gray-700 dark:text-gray-300">{{ $log->created_at->format('d/m/Y') }}
+                                <p class="font-medium text-gray-700 dark:text-gray-300">{{ $item->created_at->format('d/m/Y') }}
                                 </p>
-                                <p class="font-mono text-gray-400">{{ $log->created_at->format('H:i:s') }}</p>
+                                <p class="font-mono text-gray-400">{{ $item->created_at->format('H:i:s') }}</p>
                             </td>
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-2">
                                     <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                                         style="background: linear-gradient(135deg, #0d9373, #6366f1);">
-                                        {{ strtoupper(substr($log->user->name ?? 'S', 0, 1)) }}
+                                        {{ strtoupper(substr($item->user->name ?? 'S', 0, 1)) }}
                                     </div>
                                     <div>
                                         <p class="font-medium text-gray-800 dark:text-white text-xs">
-                                            {{ $log->user->name ?? 'System' }}</p>
-                                        <p class="text-xs text-gray-400">{{ $log->user->role ?? '—' }}</p>
+                                            {{ $item->user->name ?? 'System' }}</p>
+                                        <p class="text-xs text-gray-400">{{ $item->user->role ?? '—' }}</p>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                <span class="badge {{ $actionBadge }}">{{ $log->action_label }}</span>
+                                <span class="badge {{ $actionBadge }}">{{ $item->action_label }}</span>
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                <code class="badge badge-gray font-mono text-xs">{{ $log->model_name }}</code>
+                                <code class="badge badge-gray font-mono text-xs">{{ $item->model_name }}</code>
                             </td>
-                            <td class="px-5 py-3.5 text-xs text-gray-600 dark:text-gray-400 max-w-xs">{{ $log->description }}
+                            <td class="px-5 py-3.5 text-xs text-gray-600 dark:text-gray-400 max-w-xs">{{ $item->description }}
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                <code class="text-xs text-gray-400 font-mono">{{ $log->ip_address }}</code>
+                                <code class="text-xs text-gray-400 font-mono">{{ $item->ip_address }}</code>
                             </td>
                         </tr>
                     @empty
@@ -115,7 +115,7 @@
                 </tbody>
             </table>
         </div>
-        @if($logs->hasPages())
+        @if ($logs->hasPages())
             <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                 {{ $logs->links() }}
             </div>

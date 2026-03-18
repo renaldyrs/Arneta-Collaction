@@ -16,11 +16,11 @@
                     <select name="supplier_id" required
                         class="w-full px-3 py-2 border @error('supplier_id') border-red-500 @else border-gray-200 dark:border-gray-600 @enderror rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
                         <option value="">-- Pilih Supplier --</option>
-                        @foreach($suppliers as $sup)
+                        @foreach ($suppliers as $sup)
                             <option value="{{ $sup->id }}" {{ old('supplier_id') == $sup->id ? 'selected' : '' }}>{{ $sup->name }}</option>
                         @endforeach
                     </select>
-                    @error('supplier_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error ('supplier_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Diharapkan Tiba</label>

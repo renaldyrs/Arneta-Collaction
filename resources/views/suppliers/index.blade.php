@@ -40,7 +40,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($suppliers as $supplier)
+                    @forelse ($suppliers as $supplier)
                         <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors"
                             id="sup-row-{{ $supplier->id }}">
                             <td class="px-5 py-3.5">

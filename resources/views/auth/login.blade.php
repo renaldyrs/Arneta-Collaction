@@ -166,7 +166,7 @@
         <!-- Brand -->
         <div class="text-center">
             <div class="brand-chip">
-                @if($logoUrl)
+                @if ($logoUrl)
                     <img src="{{ $logoUrl }}" alt="Logo" class="w-full h-full object-cover rounded-[14px]"
                          onerror="this.style.display='none'">
                 @else
@@ -181,12 +181,12 @@
         <div class="login-divider mt-5"></div>
 
         <!-- Errors -->
-        @if($errors->any())
+        @if ($errors->any())
         <div class="login-error mb-4">
             <div class="flex items-center gap-2">
                 <i class="fas fa-exclamation-circle"></i>
                 <div>
-                    @foreach($errors->all() as $error)
+                    @foreach ($errors->all() as $error)
                         <p>{{ $error }}</p>
                     @endforeach
                 </div>
@@ -194,7 +194,7 @@
         </div>
         @endif
 
-        @if(session('status'))
+        @if (session('status'))
         <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:0.65rem;padding:0.65rem 0.875rem;font-size:0.8rem;color:#6ee7b7;margin-bottom:1rem;">
             <i class="fas fa-check-circle mr-2"></i>{{ session('status') }}
         </div>
@@ -237,7 +237,7 @@
                            {{ old('remember') ? 'checked' : '' }}>
                     <span style="font-size:0.8rem; color: rgba(255,255,255,0.45);">Ingat saya</span>
                 </label>
-                @if(Route::has('password.request'))
+                @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}" style="font-size:0.8rem; color: #2dd4aa;" class="hover:underline">
                     Lupa password?
                 </a>
@@ -250,7 +250,7 @@
                 <i class="fas fa-arrow-right ml-2 text-sm"></i>
             </button>
 
-            <!-- @if(Route::has('register'))
+            <!-- @if (Route::has('register'))
             <div class="login-divider"></div>
             <p class="text-center" style="font-size:0.8rem; color: rgba(255,255,255,0.35);">
                 Belum punya akun?

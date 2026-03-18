@@ -14,13 +14,16 @@ class Supplier extends Model
         'phone',
         'email',
         'address',
-        'email',
-        
     ];
 
     // Relasi ke Product
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function purchaseOrders()
+    {
+        return $this->hasMany(PurchaseOrder::class);
     }
 }

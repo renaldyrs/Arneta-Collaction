@@ -21,7 +21,7 @@
         <div class="muted">LAPORAN KEUANGAN — Periode: {{ $startDate }} s/d {{ $endDate }}</div>
     </div>
 
-    @if(!empty($productsMissingCostCount) && $productsMissingCostCount > 0)
+    @if (!empty($productsMissingCostCount) && $productsMissingCostCount > 0)
         <div class="warn">Peringatan: Terdapat {{ $productsMissingCostCount }} produk dengan nilai cost kosong/0. Contoh: {{ implode(', ', array_map(fn($p)=> $p['name'], $productsMissingCostSamples)) }}</div>
     @endif
 
@@ -51,7 +51,7 @@
             </tr>
         </thead>
         <tbody>
-        @foreach($transactions as $trx)
+        @foreach ($transactions as $trx)
             <tr>
                 <td>{{ $trx->invoice_number }}</td>
                 <td>{{ $trx->created_at->format('d/m/Y H:i') }}</td>

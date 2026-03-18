@@ -8,19 +8,30 @@
     <title>Arneta Collection — POS System</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 
-    <!-- Google Fonts: Inter -->
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#14b890">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="{{ asset('pwa-icon.png') }}">
+
+    <!-- Resource Hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
+    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
 
     <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,7 +76,51 @@
         }
 
         body {
+            background: #f0f4f8; /* default light mode - bisa di class */
+        }
+
+        /* ─── Base Page Wrapper ─── */
+        :root {
+            --swal-bg: #ffffff;
+            --swal-text: #1f2937;
+            --swal-border: #e2e8f0;
+        }
+
+        .dark {
+            --swal-bg: #1e293b;
+            --swal-text: #f3f4f6;
+            --swal-border: #334155;
+        }
+
+        /* ─── SweetAlert2 Theme Sync ─── */
+        .swal2-popup {
+            background: var(--swal-bg) !important;
+            color: var(--swal-text) !important;
+            border: 1px solid var(--swal-border) !important;
+            border-radius: 1rem !important;
+        }
+        .swal2-title, .swal2-html-container, .swal2-content {
+            color: var(--swal-text) !important;
+        }
+        .swal2-confirm {
+            background-color: #10b981 !important; /* emerald-500 */
+            border-radius: 0.5rem !important;
+        }
+        .swal2-cancel {
+            border-radius: 0.5rem !important;
+        }
+
+        .bg-page {
             background: #f0f4f8;
+            transition: background-color 0.3s ease;
+        }
+
+        .dark .bg-page {
+            background: #0f1923;
+        }
+
+        .transition-theme {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
         /* ─── Sidebar ─── */
@@ -483,20 +538,25 @@
         }
 
         /* ─── Dark body ─── */
+        body { transition: background-color 0.3s; }
         .dark body,
         .dark {
             background: #0f1923;
         }
 
-        .dark .bg-page {
-            background: #0f1923;
-        }
     </style>
 
+    <!-- Pre-load Dark Mode Script -->
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    
     @stack('styles')
 </head>
 
-<body class="min-h-screen" style="background: #f0f4f8;">
+<body class="min-h-screen transition-theme bg-page text-gray-800 dark:text-gray-100">
     <!-- Mobile Overlay -->
     <div id="sidebarOverlay"
         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden transition-opacity duration-300 opacity-0"
@@ -506,7 +566,7 @@
 
         <!-- ═══ SIDEBAR ═══ -->
         <div id="sidebar"
-            class="fixed md:relative w-[220px] h-full z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+            class="fixed md:relative w-[240px] md:w-[220px] lg:w-[240px] h-full z-40 transform -translate-x-full md:translate-x-0 transition-all duration-300 ease-in-out flex flex-col">
 
             @php
                 try {
@@ -533,7 +593,7 @@
                 <div class="flex items-center gap-2.5">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 relative"
                          style="background: linear-gradient(135deg,#0d9373 0%,#065f46 100%); box-shadow: 0 4px 14px rgba(13,147,115,0.5), inset 0 1px 0 rgba(255,255,255,0.2);">
-                        @if($sideLogoUrl)
+                        @if ($sideLogoUrl)
                             <img src="{{ $sideLogoUrl }}" alt="Logo" class="w-full h-full object-cover"
                                 onerror="this.style.display='none'; this.nextSibling.style.display='flex'">
                             <span class="hidden absolute inset-0 items-center justify-center">
@@ -569,7 +629,7 @@
                     <span>Dashboard</span>
                 </a>
 
-                @if($sideIsAdmin)
+                @if ($sideIsAdmin)
 
                     <div class="nav-section">Master Data</div>
 
@@ -631,7 +691,7 @@
                                 ->count();
                         } catch (\Exception $e) { $todayTxCount = 0; }
                     @endphp
-                    @if($todayTxCount > 0)
+                    @if ($todayTxCount > 0)
                         <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums"
                               style="background: rgba(52,211,153,0.18); color: #34d399;">{{ $todayTxCount }}</span>
                     @endif
@@ -657,7 +717,14 @@
                     <span>Return</span>
                 </a>
 
-                @if($sideIsAdmin)
+                @if ($sideIsAdmin)
+                    <div class="nav-section">Pengaturan</div>
+
+                    <a href="{{ route('settings.print') }}" class="nav-item {{ request()->routeIs('settings.print') ? 'active' : '' }}">
+                        <span class="nav-icon-wrap"><i class="nav-icon fas fa-print"></i></span>
+                        <span>Manajemen Print</span>
+                    </a>
+
                     <div class="nav-section">Laporan</div>
 
                     <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.index') ? 'active' : '' }}">
@@ -684,7 +751,7 @@
                             try { $lowStockCount = \App\Models\Product::whereColumn('stock', '<=', 'low_stock_threshold')->where('stock', '>=', 0)->count(); }
                             catch (\Exception $e) { $lowStockCount = 0; }
                         @endphp
-                        @if($lowStockCount > 0)
+                        @if ($lowStockCount > 0)
                             <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums"
                                   style="background: rgba(245,158,11,0.18); color: #f59e0b;">{{ $lowStockCount }}</span>
                         @endif
@@ -742,21 +809,34 @@
 
                     <!-- Right -->
                     <div class="flex items-center gap-2">
-                        <!-- Low stock alert -->
-                        @php try {
-                                $navLowStock = \App\Models\Product::whereColumn('stock', '<=', 'low_stock_threshold')->where('stock', '>=', 0)->count();
-                            } catch (\Exception $e) {
-                                $navLowStock = 0;
-                        } @endphp
-                        @if($navLowStock > 0)
-                            <a href="{{ route('low-stock.index') }}"
-                                class="relative p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
-                                <i
-                                    class="fas fa-bell text-gray-500 dark:text-gray-400 group-hover:text-amber-500 transition-colors"></i>
-                                <span
-                                    class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{{ min($navLowStock, 9) }}</span>
-                            </a>
-                        @endif
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button id="notificationButton"
+                                class="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group relative"
+                                title="Notifikasi">
+                                <i class="fas fa-bell text-gray-500 dark:text-gray-400 group-hover:text-amber-500 transition-colors"></i>
+                                <span id="notificationBadge"
+                                    class="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 hidden">0</span>
+                            </button>
+
+                            <!-- Notification Dropdown -->
+                            <div id="notificationDropdown"
+                                class="hidden absolute right-0 mt-1.5 w-72 rounded-2xl shadow-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
+                                <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                                    <h3 class="text-xs font-bold text-gray-800 dark:text-white uppercase tracking-wider">Notifikasi</h3>
+                                    <span id="notifCountLabel" class="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">0 Baru</span>
+                                </div>
+                                <div id="notificationList" class="max-h-80 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-700/50">
+                                    <div class="p-6 text-center text-gray-400">
+                                        <i class="fas fa-bell-slash text-2xl mb-2 block opacity-20"></i>
+                                        <p class="text-xs">Tidak ada notifikasi baru</p>
+                                    </div>
+                                </div>
+                                <div class="px-3 py-2 bg-gray-50/50 dark:bg-gray-700/30 text-center border-t border-gray-100 dark:border-gray-700">
+                                    <button onclick="document.getElementById('notificationDropdown').classList.add('hidden')" class="text-[10px] text-gray-500 hover:text-emerald-500 font-medium">Tutup</button>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Dark Mode -->
                         <button id="darkModeToggle"
@@ -809,9 +889,9 @@
             </header>
 
             <!-- Content -->
-            <main class="flex-1 overflow-y-auto" style="background: #f0f4f8;">
+            <main class="flex-1 overflow-y-auto bg-page transition-theme">
                 <div class="p-4 md:p-6">
-                    @if(session('success'))
+                    @if (session('success'))
                         <div class="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
                             style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;" x-data="{ show: true }"
                             x-show="show">
@@ -821,7 +901,7 @@
                                 class="ml-auto opacity-60 hover:opacity-100">×</button>
                         </div>
                     @endif
-                    @if(session('error'))
+                    @if (session('error'))
                         <div class="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
                             style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">
                             <i class="fas fa-exclamation-circle"></i>
@@ -872,36 +952,171 @@
             ar.classList.toggle('rotate-180');
         }
 
-        // ─── User Dropdown ───
+        // ─── Dropdowns & Modal ───
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('hidden');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('userMenuBtn');
-            const dd = document.getElementById('userDropdown');
-            if (btn && dd) {
-                btn.addEventListener('click', (e) => { e.stopPropagation(); dd.classList.toggle('hidden'); });
-                document.addEventListener('click', () => dd.classList.add('hidden'));
+            // User Dropdown Linkage
+            const userBtn = document.getElementById('userMenuBtn');
+            const userDD  = document.getElementById('userDropdown');
+            if (userBtn && userDD) {
+                userBtn.addEventListener('click', (e) => { 
+                    e.stopPropagation(); 
+                    userDD.classList.toggle('hidden'); 
+                    if (notifDD) notifDD.classList.add('hidden');
+                });
             }
+
+            // Notifications Dropdown Linkage
+            const notifBtn = document.getElementById('notificationButton');
+            const notifDD  = document.getElementById('notificationDropdown');
+            if (notifBtn && notifDD) {
+                notifBtn.addEventListener('click', (e) => { 
+                    e.stopPropagation(); 
+                    notifDD.classList.toggle('hidden'); 
+                    if (userDD) userDD.classList.add('hidden');
+                });
+            }
+
+            document.addEventListener('click', (e) => {
+                if (userDD && !userBtn.contains(e.target)) userDD.classList.add('hidden');
+                if (notifDD && !notifBtn.contains(e.target)) notifDD.classList.add('hidden');
+            });
 
             // Dark Mode
             const dmBtn = document.getElementById('darkModeToggle');
-            if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
             if (dmBtn) {
                 dmBtn.addEventListener('click', () => {
                     document.documentElement.classList.toggle('dark');
                     localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-                    // update body bg for dark
-                    document.body.style.background = document.documentElement.classList.contains('dark') ? '#0f1923' : '#f0f4f8';
                 });
             }
 
-            // Apply dark bg on load
-            if (document.documentElement.classList.contains('dark')) {
-                document.body.style.background = '#0f1923';
+            // ─── Notification Polling ───
+            const fmtRp = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+            const fmtNum = n => parseInt(n).toLocaleString('id-ID');
+
+            let pollingInterval = null;
+
+            async function updateGlobalNotifications() {
+                // Smart Polling: Only fetch if tab is active
+                if (document.visibilityState !== 'visible') return;
+
+                try {
+                    const res = await fetch('/api/v1/dashboard/stats', {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (!res.ok) return;
+                    const d = await res.json();
+
+                    const badge = document.getElementById('notificationBadge');
+                    const label = document.getElementById('notifCountLabel');
+                    const list  = document.getElementById('notificationList');
+                    
+                    if (!badge || !label || !list) return;
+
+                    let totalNotifs = 0;
+                    let html = '';
+
+                    // 1. Low Stock Notif
+                    if (d.low_stock_count > 0) {
+                        totalNotifs++;
+                        html += `
+                            <a href="/low-stock" class="flex items-start gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-exclamation-triangle text-amber-500 text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs font-bold text-gray-800 dark:text-white">Stok Menipis!</p>
+                                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${d.low_stock_count} produk butuh restock.</p>
+                                </div>
+                            </a>`;
+                    }
+
+                    // 2. Pending Returns Notif (For Admin)
+                    if (d.pending_returns_count > 0) {
+                        totalNotifs++;
+                        html += `
+                            <a href="/returns" class="flex items-start gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-undo text-blue-500 text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs font-bold text-gray-800 dark:text-white">Retur Pending</p>
+                                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${d.pending_returns_count} pengajuan butuh review.</p>
+                                </div>
+                            </a>`;
+                    }
+
+                    // 3. Sales Summary (Today)
+                    if (d.today_transactions > 0) {
+                        html += `
+                            <div class="flex items-start gap-3 p-4 bg-emerald-50/30 dark:bg-emerald-900/10">
+                                <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-chart-line text-emerald-500 text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs font-bold text-gray-800 dark:text-white">Omzet Hari Ini</p>
+                                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${d.today_transactions} transaksi: <span class="text-emerald-600 dark:text-emerald-400 font-bold">${fmtRp(d.today_revenue)}</span></p>
+                                </div>
+                            </div>`;
+                    }
+
+                    if (totalNotifs > 0) {
+                        badge.textContent = totalNotifs;
+                        badge.classList.remove('hidden');
+                        label.textContent = `${totalNotifs} Baru`;
+                        list.innerHTML = html;
+                    } else if (d.today_transactions > 0) {
+                        badge.classList.add('hidden');
+                        label.textContent = `Ringkasan`;
+                        list.innerHTML = html;
+                    }
+
+                } catch(e) { console.error('Notif error:', e); }
             }
+
+            // Start/Stop polling based on visibility
+            function managePolling() {
+                if (document.visibilityState === 'visible') {
+                    updateGlobalNotifications();
+                    if (!pollingInterval) {
+                        pollingInterval = setInterval(updateGlobalNotifications, 120000); // 2 minutes interval
+                    }
+                } else {
+                    if (pollingInterval) {
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+                    }
+                }
+            }
+
+            document.addEventListener('visibilitychange', managePolling);
+            managePolling(); // Initial check
         });
     </script>
 
     @include('sweetalert::alert')
+    <!-- Printer Bridge -->
+    <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.min.js"></script>
+    <script src="{{ asset('js/qz-bridge.js') }}"></script>
+
     @stack('scripts')
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('Service worker registered.', reg);
+                }).catch(err => {
+                    console.error('Service worker registration failed:', err);
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>

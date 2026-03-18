@@ -213,13 +213,14 @@ class ProductController extends Controller
         return response($barcodeImage, Response::HTTP_OK, $headers);
     }
 
-    public function printBarcodes($id)
+    public function printBarcodes(Request $request, $id)
     {
         $products = Product::where('id', $id)
-            ->where('stock', '>', 0)
-            ->orderBy('name')
             ->get();
-        return view('products.barcode', compact('products'));
+        
+        $quantity = $request->input('quantity', 1);
+        
+        return view('products.barcode', compact('products', 'quantity'));
     }
 
     // Fill missing cost for products (admin action)

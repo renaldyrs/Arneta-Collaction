@@ -56,7 +56,7 @@
 
 
             <!-- Master Data - Hanya untuk admin -->
-            @if($isAdmin)
+            @if ($isAdmin)
 
                 <!-- Dashboard - Selalu tampil untuk semua user -->
                 <a href="{{ route('dashboard') }}"
@@ -67,7 +67,7 @@
                 </a>
 
                 <div class="mt-4">
-                    <button onclick="toggleDropdown('master-data-dropdown', 'master-data-arrow')"
+                <button onclick="sidebarToggleDropdown('master-data-dropdown', 'master-data-arrow')"
                         class="group flex items-center justify-between w-full px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                         <div class="flex items-center">
                             <i class="fas fa-database mr-3 w-5 text-center"></i>
@@ -125,7 +125,7 @@
 
             <!-- Transaksi - Tampil untuk semua user -->
             <div class="mt-1">
-                <button onclick="toggleDropdown('transaksi-dropdown', 'transaksi-arrow')"
+                <button onclick="sidebarToggleDropdown('transaksi-dropdown', 'transaksi-arrow')"
                     class="group flex items-center justify-between w-full px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                     <div class="flex items-center">
                         <i class="fas fa-exchange-alt mr-3 w-5 text-center"></i>
@@ -168,7 +168,7 @@
             <!-- Laporan - Tampil untuk semua user -->
             @if ($isAdmin)
                 <div class="mt-1">
-                    <button onclick="toggleDropdown('laporan-dropdown', 'laporan-arrow')"
+                    <button onclick="sidebarToggleDropdown('laporan-dropdown', 'laporan-arrow')"
                         class="group flex items-center justify-between w-full px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                         <div class="flex items-center">
                             <i class="fas fa-chart-bar mr-3 w-5 text-center"></i>
@@ -256,7 +256,7 @@
 
 @push('scripts')
     <script>
-        function toggleDropdown(dropdownId, arrowId) {
+        function sidebarToggleDropdown(dropdownId, arrowId) {
             const dropdown = document.getElementById(dropdownId);
             const arrow = document.getElementById(arrowId);
 
@@ -274,7 +274,7 @@
             const currentRoute = '{{ request()->route()->getName() }}';
 
             // Master Data routes
-            @if($isAdmin)
+            @if ($isAdmin)
                 if (currentRoute && (currentRoute.startsWith('store-profile') ||
                     currentRoute.startsWith('users') ||
                     currentRoute.startsWith('categories') ||

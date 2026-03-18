@@ -15,10 +15,17 @@ class PurchaseOrder extends Model
         'user_id',
         'status',
         'total_amount',
+        'paid_amount',
+        'payment_status',
         'notes',
         'expected_date',
         'received_date',
     ];
+
+    public function payments()
+    {
+        return $this->hasMany(PurchasePayment::class);
+    }
 
     protected $casts = [
         'expected_date' => 'date',

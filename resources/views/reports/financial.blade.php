@@ -19,21 +19,21 @@
         </div>
     </div>
 
-    @if(!empty($productsMissingCostCount) && $productsMissingCostCount > 0)
+    @if (!empty($productsMissingCostCount) && $productsMissingCostCount > 0)
         <div class="mb-4 p-4 border-l-4 border-amber-400 bg-amber-50 text-amber-800 rounded">
             <div class="flex items-start justify-between gap-4">
                 <div>
                     <strong>Peringatan:</strong> Terdapat <strong>{{ $productsMissingCostCount }}</strong> produk dengan nilai `cost` kosong/0.
-                    @if(!empty($productsMissingCostSamples))
+                    @if (!empty($productsMissingCostSamples))
                         <div class="text-sm mt-1">Contoh:
-                            @foreach($productsMissingCostSamples as $idx => $prod)
-                                @if(is_array($prod) && isset($prod['id']))
-                                    <a href="{{ route('products.edit', $prod['id']) }}" class="underline text-amber-700">{{ $prod['name'] }}</a>@if($idx < count($productsMissingCostSamples)-1), @endif
+                            @foreach ($productsMissingCostSamples as $idx => $prod)
+                                @if (is_array($prod) && isset($prod['id']))
+                                    <a href="{{ route('products.edit', $prod['id']) }}" class="underline text-amber-700">{{ $prod['name'] }}</a>@if ($idx < count($productsMissingCostSamples)-1), @endif
                                 @else
-                                    {{ is_array($prod) ? ($prod['name'] ?? '#') : $prod }}@if($idx < count($productsMissingCostSamples)-1), @endif
+                                    {{ is_array($prod) ? ($prod['name'] ?? '#') : $prod }}@if ($idx < count($productsMissingCostSamples)-1), @endif
                                 @endif
                             @endforeach
-                            @if($productsMissingCostCount > count($productsMissingCostSamples)) , ... @endif
+                            @if ($productsMissingCostCount > count($productsMissingCostSamples)) , ... @endif
                         </div>
                     @endif
                     <div class="text-xs mt-2 text-gray-600">Silakan perbarui nilai `cost` pada produk yang bersangkutan untuk perhitungan persediaan akurat.</div>
@@ -106,7 +106,7 @@
             <p class="text-2xl font-bold text-gray-900 dark:text-white">Rp {{ number_format($totalNetRevenue, 0, ',', '.') }}</p>
             <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">
                 <i class="fas fa-arrow-up text-[10px]"></i> 
-                @if($revenueChange >= 0)
+                @if ($revenueChange >= 0)
                     {{ number_format($revenueChange, 1) }}% vs periode lalu
                 @else
                     {{ number_format($revenueChange, 1) }}% vs periode lalu
@@ -124,9 +124,9 @@
             <p class="text-2xl font-bold {{ $netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">Rp {{ number_format($netProfit, 0, ',', '.') }}</p>
             <p class="text-xs {{ $netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }} font-medium mt-1">
                 Margin: {{ number_format($marginPercentage, 1) }}%
-                @if($profitChange >= 0 && $profitChange != 0)
+                @if ($profitChange >= 0 && $profitChange != 0)
                     | <i class="fas fa-arrow-up text-[10px]"></i> {{ number_format($profitChange, 1) }}%
-                @elseif($profitChange < 0)
+                @elseif ($profitChange < 0)
                     | <i class="fas fa-arrow-down text-[10px]"></i> {{ number_format($profitChange, 1) }}%
                 @endif
             </p>
@@ -150,7 +150,7 @@
                         'QRIS' => ['color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)']
                     ];
                 @endphp
-                @foreach($paymentMethodSummary as $i => $method)
+                @foreach ($paymentMethodSummary as $i => $method)
                     @php
                         $colors = ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6'];
                         $c = $colors[$i % count($colors)];
@@ -177,7 +177,7 @@
     </div>
 
     {{-- Breakdown Pengeluaran --}}
-    @if($expensesByCategory->count() > 0 || $totalExpenses > 0)
+    @if ($expensesByCategory->count() > 0 || $totalExpenses > 0)
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
         <div class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
@@ -186,12 +186,12 @@
                 </h3>
             </div>
             <div class="p-5">
-                @if($expensesByCategory->count() > 0)
+                @if ($expensesByCategory->count() > 0)
                     <div class="space-y-3">
                         @php
                             $expenseColors = ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16'];
                         @endphp
-                        @foreach($expensesByCategory as $idx => $expense)
+                        @foreach ($expensesByCategory as $idx => $expense)
                             @php
                                 $color = $expenseColors[$idx % count($expenseColors)];
                                 $percentage = $totalExpenses > 0 ? ($expense->total / $totalExpenses) * 100 : 0;
@@ -305,7 +305,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($transactions as $tx)
+                    @forelse ($transactions as $tx)
                         <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors">
                             <td class="px-5 py-3.5">
                                 <code
@@ -339,7 +339,7 @@
                 </tbody>
             </table>
         </div>
-        @if($transactions instanceof \Illuminate\Pagination\LengthAwarePaginator && $transactions->hasPages())
+        @if ($transactions instanceof \Illuminate\Pagination\LengthAwarePaginator && $transactions->hasPages())
             <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                 {{ $transactions->appends(request()->query())->links() }}
             </div>

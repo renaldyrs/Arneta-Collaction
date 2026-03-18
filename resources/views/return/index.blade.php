@@ -92,7 +92,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($returns as $return)
+                    @forelse ($returns as $return)
                         <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors">
                             <td class="px-5 py-3.5">
                                 <code
@@ -125,9 +125,9 @@
                                 <p class="truncate" title="{{ $return->reason }}">{{ $return->reason }}</p>
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                @if($return->status == 'approved')
+                                @if ($return->status == 'approved')
                                     <span class="badge badge-green"><i class="fas fa-circle text-[6px]"></i> Disetujui</span>
-                                @elseif($return->status == 'rejected')
+                                @elseif ($return->status == 'rejected')
                                     <span class="badge badge-red"><i class="fas fa-circle text-[6px]"></i> Ditolak</span>
                                 @else
                                     <span class="badge badge-yellow"><i class="fas fa-circle text-[6px] animate-pulse"></i>
@@ -135,24 +135,30 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3.5">
-                                @if($return->status == 'pending')
+                                @if ($return->status == 'pending')
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <form action="{{ route('returns.approve', $return->id) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit"
-                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 transition-colors"
-                                                onclick="return confirm('Setujui retur ini? Stok produk akan dikembalikan.')">
-                                                <i class="fas fa-check"></i> Setuju
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('returns.reject', $return->id) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit"
-                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 transition-colors"
-                                                onclick="return confirm('Tolak retur ini?')">
-                                                <i class="fas fa-times"></i> Tolak
-                                            </button>
-                                        </form>
+                                        @if (auth()->user()->role === 'admin')
+                                            <form action="{{ route('returns.approve', $return->id) }}" method="POST"
+                                                class="inline">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 transition-colors"
+                                                    onclick="return confirm('Setujui retur ini? Stok produk akan dikembalikan.')">
+                                                    <i class="fas fa-check"></i> Setuju
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('returns.reject', $return->id) }}" method="POST"
+                                                class="inline">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 transition-colors"
+                                                    onclick="return confirm('Tolak retur ini?')">
+                                                    <i class="fas fa-times"></i> Tolak
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="text-[10px] text-gray-400 italic">Menunggu persetujuan Admin</span>
+                                        @endif
                                     </div>
                                 @else
                                     <p class="text-center text-xs text-gray-400">—</p>
@@ -179,7 +185,7 @@
                 </tbody>
             </table>
         </div>
-        @if($returns->hasPages())
+        @if ($returns->hasPages())
             <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                 {{ $returns->links('vendor.tailwind') }}
             </div>
@@ -224,7 +230,7 @@
             {{-- Body --}}
             <div class="px-6 py-5">
                 {{-- Error --}}
-                @if(session('error'))
+                @if (session('error'))
                     <div
                         class="mb-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm flex items-center gap-2">
                         <i class="fas fa-triangle-exclamation"></i>
@@ -312,7 +318,7 @@
                             </label>
                             {{-- Quick reason buttons --}}
                             <div class="flex flex-wrap gap-1.5 mb-2">
-                                @foreach(['Produk rusak/cacat', 'Salah ukuran', 'Tidak sesuai pesanan', 'Produk tidak berfungsi'] as $reason)
+                                @foreach (['Produk rusak/cacat', 'Salah ukuran', 'Tidak sesuai pesanan', 'Produk tidak berfungsi'] as $reason)
                                     <button type="button" onclick="setReason('{{ $reason }}')"
                                         class="text-[11px] px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                                         {{ $reason }}
@@ -535,7 +541,7 @@
         });
 
         // ─── Auto buka modal jika ada flash transaction_id ─────────
-        @if(session('open_return_for'))
+        @if (session('open_return_for'))
             document.addEventListener('DOMContentLoaded', () => {
                 openReturnModal({{ session('open_return_for') }});
             });

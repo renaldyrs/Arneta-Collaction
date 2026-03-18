@@ -76,4 +76,22 @@ class SupplierController extends Controller
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus.');
     }
+
+    public function debtSummary()
+    {
+        $suppliers = Supplier::with(['purchaseOrders' => function($q) {
+            $q->where('payment_status', '!=', 'paid')
+              ->where('status', '!=', 'cancelled');
+        }])->get()->map(function($supplier) {
+            $supplier->active_pos = $supplier->purchaseOrders;
+            $supplier->total_debt = $supplier->purchaseOrders->sum('total_amount') - $supplier->purchaseOrders->sum('paid_amount');
+            return $supplier;
+        })->filter(function($supplier) {
+            return $supplier->total_debt > 0;
+        });
+
+        $totalGlobalDebt = $suppliers->sum('total_debt');
+
+        return view('suppliers.debt', compact('suppliers', 'totalGlobalDebt'));
+    }
 }

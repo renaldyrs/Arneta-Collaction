@@ -19,7 +19,7 @@
                                 class="text-red-500">*</span></label>
                         <select name="supplier_id" required
                             class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                            @foreach($suppliers as $sup)
+                            @foreach ($suppliers as $sup)
                                 <option value="{{ $sup->id }}" {{ $purchaseOrder->supplier_id == $sup->id ? 'selected' : '' }}>
                                     {{ $sup->name }}</option>
                             @endforeach
@@ -58,12 +58,12 @@
                     </div>
 
                     <div id="itemsContainer" class="space-y-3">
-                        @foreach($purchaseOrder->details as $i => $detail)
+                        @foreach ($purchaseOrder->details as $i => $detail)
                             <div class="grid grid-cols-12 gap-2 items-start" id="item-existing-{{ $i }}">
                                 <div class="col-span-5">
                                     <select name="items[{{ $i }}][product_id]" required
                                         class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                                        @foreach($products as $p)
+                                        @foreach ($products as $p)
                                             <option value="{{ $p->id }}" {{ $detail->product_id == $p->id ? 'selected' : '' }}>
                                                 {{ $p->name }}</option>
                                         @endforeach

@@ -27,4 +27,19 @@ export default defineConfig({
             vue: 'vue/dist/vue.esm-bundler.js',
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('bootstrap')) return 'vendor-bootstrap';
+                        if (id.includes('vue')) return 'vendor-vue';
+                        if (id.includes('html5-qrcode')) return 'vendor-qrcode';
+                        return 'vendor';
+                    }
+                }
+            }
+        },
+        chunkSizeWarningLimit: 1000,
+    },
 });

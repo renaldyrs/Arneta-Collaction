@@ -33,7 +33,7 @@
     
     <table class="items">
         <tbody>
-            @foreach($return->items as $item)
+            @foreach ($return->items as $item)
             <tr>
                 <td>{{ $item->product->name }}</td>
                 <td class="text-right">{{ $item->quantity }}x</td>

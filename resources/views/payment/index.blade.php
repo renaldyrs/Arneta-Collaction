@@ -22,9 +22,9 @@
             'E-Wallet' => ['icon' => 'fa-wallet', 'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.12)'],
         ];
     @endphp
-    @if($paymentMethods->count() > 0)
+    @if ($paymentMethods->count() > 0)
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-            @foreach($paymentMethods as $pm)
+            @foreach ($paymentMethods as $pm)
                 @php $style = $pmIcons[$pm->name] ?? ['icon' => 'fa-credit-card', 'color' => '#0d9373', 'bg' => 'rgba(13,147,115,0.12)']; @endphp
                 <div id="pm-card-{{ $pm->id }}"
                     class="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-5 group hover:shadow-md transition-all duration-200">
@@ -83,7 +83,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($paymentMethods as $pm)
+                    @forelse ($paymentMethods as $pm)
                         @php $style = $pmIcons[$pm->name] ?? ['icon' => 'fa-credit-card', 'color' => '#0d9373', 'bg' => 'rgba(13,147,115,0.12)']; @endphp
                         <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors" id="pm-row-{{ $pm->id }}">
                             <td class="px-5 py-3.5">

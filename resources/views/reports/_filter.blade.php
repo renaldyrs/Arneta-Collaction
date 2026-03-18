@@ -32,7 +32,7 @@
                 <label for="customer_id" class="block text-sm font-medium text-gray-700 mb-1">Pelanggan</label>
                 <select id="customer_id" name="customer_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Semua Pelanggan</option>
-                    @foreach($customers as $customer)
+                    @foreach ($customers as $customer)
                         <option value="{{ $customer->id }}" {{ $customerId == $customer->id ? 'selected' : '' }}>
                             {{ $customer->name }}
                         </option>

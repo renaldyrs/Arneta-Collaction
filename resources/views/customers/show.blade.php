@@ -80,18 +80,18 @@
                     <h3 class="font-semibold text-gray-800 dark:text-white">Riwayat Transaksi Terakhir</h3>
                 </div>
                 <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                    @forelse($recentTransactions as $trx)
+                    @forelse ($recentTransactions as $item)
                         <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="font-semibold text-gray-800 dark:text-white text-sm">{{ $trx->invoice_number }}
+                                    <p class="font-semibold text-gray-800 dark:text-white text-sm">{{ $item->invoice_number }}
                                     </p>
-                                    <p class="text-xs text-gray-400">{{ $trx->created_at->format('d M Y, H:i') }}</p>
+                                    <p class="text-xs text-gray-400">{{ $item->created_at->format('d M Y, H:i') }}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-bold text-green-600">Rp {{ number_format($trx->total_amount, 0, ',', '.') }}
+                                    <p class="font-bold text-green-600">Rp {{ number_format($item->total_amount, 0, ',', '.') }}
                                     </p>
-                                    <p class="text-xs text-gray-400">{{ $trx->paymentMethod->name ?? '-' }}</p>
+                                    <p class="text-xs text-gray-400">{{ $item->paymentMethod->name ?? '-' }}</p>
                                 </div>
                             </div>
                         </div>

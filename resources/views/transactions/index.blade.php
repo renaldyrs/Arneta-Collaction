@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Riwayat Transaksi</h1>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                 Semua transaksi
-                @if(auth()->user()->role !== 'admin')
+                @if (auth()->user()->role !== 'admin')
                     oleh <span class="font-semibold text-emerald-600">{{ auth()->user()->name }}</span>
                 @endif
                 · Periode {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} –
@@ -19,7 +19,7 @@
                 title="Export ke CSV/Excel">
                 <i class="fas fa-file-excel"></i> Export CSV
             </a>
-            @if(auth()->user()->role === 'admin')
+            @if (auth()->user()->role === 'admin')
                 <a href="{{ route('reports.index') }}" class="btn-secondary">
                     <i class="fas fa-chart-bar"></i> Laporan
                 </a>
@@ -112,7 +112,7 @@
                             Bayar</label>
                         <select name="payment_method_id" class="form-select text-sm w-full">
                             <option value="">Semua Metode</option>
-                            @foreach($paymentMethods as $pm)
+                            @foreach ($paymentMethods as $pm)
                                 <option value="{{ $pm->id }}" {{ $paymentId == $pm->id ? 'selected' : '' }}>{{ $pm->name }}
                                 </option>
                             @endforeach
@@ -128,20 +128,20 @@
                             <option value="">Semua Pelanggan</option>
                             <option value="0" {{ request('customer_id') === '0' ? 'selected' : '' }}>Tanpa Pelanggan (Umum)
                             </option>
-                            @foreach($customers as $cust)
+                            @foreach ($customers as $cust)
                                 <option value="{{ $cust->id }}" {{ $customerId == $cust->id ? 'selected' : '' }}>{{ $cust->name }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
                     {{-- Kasir (Admin Only) --}}
-                    @if(auth()->user()->role === 'admin')
+                    @if (auth()->user()->role === 'admin')
                         <div>
                             <label
                                 class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">Kasir</label>
                             <select name="user_id" class="form-select text-sm w-full">
                                 <option value="">Semua Kasir</option>
-                                @foreach($kasirList as $kasir)
+                                @foreach ($kasirList as $kasir)
                                     <option value="{{ $kasir->id }}" {{ $kasirId == $kasir->id ? 'selected' : '' }}>{{ $kasir->name }}
                                     </option>
                                 @endforeach
@@ -211,7 +211,7 @@
                         <th
                             class="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Total</th>
-                        @if(auth()->user()->role === 'admin')
+                        @if (auth()->user()->role === 'admin')
                             <th
                                 class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden xl:table-cell">
                                 Kasir</th>
@@ -222,15 +222,15 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($transactions as $tx)
+                    @forelse ($transactions as $tx)
                         @php
                             $pmName = $tx->paymentMethod->name ?? '';
-                            $pmBadge = match (true) {
-                                str_contains($pmName, 'Tunai') => 'badge-green',
-                                str_contains($pmName, 'Transfer') || str_contains($pmName, 'Bank') => 'badge-blue',
-                                str_contains($pmName, 'QRIS') || str_contains($pmName, 'QR') => 'badge-purple',
-                                default => 'badge-gray'
-                            };
+                            switch (true) {
+                                case str_contains($pmName, 'Tunai'): $pmBadge = 'badge-green'; break;
+                                case str_contains($pmName, 'Transfer') || str_contains($pmName, 'Bank'): $pmBadge = 'badge-blue'; break;
+                                case str_contains($pmName, 'QRIS') || str_contains($pmName, 'QR'): $pmBadge = 'badge-purple'; break;
+                                default: $pmBadge = 'badge-gray'; break;
+                            }
                         @endphp
                         <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors group" id="tx-{{ $tx->id }}">
                             {{-- Invoice --}}
@@ -238,12 +238,12 @@
                                 <code class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
                                                     {{ $tx->invoice_number }}
                                                 </code>
-                                @if($tx->discount_amount > 0)
+                                @if ($tx->discount_amount > 0)
                                     <span class="badge badge-yellow text-[10px] ml-1">
                                         <i class="fas fa-tag text-[8px]"></i> Diskon
                                     </span>
                                 @endif
-                                @if($tx->notes)
+                                @if ($tx->notes)
                                     <p class="text-[10px] text-gray-400 mt-0.5 truncate max-w-[120px]" title="{{ $tx->notes }}">
                                         <i class="fas fa-note-sticky"></i> {{ $tx->notes }}
                                     </p>
@@ -261,7 +261,7 @@
                             </td>
                             {{-- Pelanggan --}}
                             <td class="px-4 py-3.5 hidden md:table-cell">
-                                @if($tx->customer)
+                                @if ($tx->customer)
                                     <div class="flex items-center gap-2">
                                         <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                                             style="background: linear-gradient(135deg,#0d9373,#6366f1);">
@@ -280,13 +280,13 @@
                             {{-- Item --}}
                             <td class="px-4 py-3.5 hidden lg:table-cell">
                                 <div class="flex flex-wrap gap-1 max-w-[200px]">
-                                    @foreach($tx->details->take(3) as $d)
+                                    @foreach ($tx->details->take(3) as $d)
                                         <span class="badge badge-gray text-[10px]">
                                             {{ $d->product->name ?? '?' }} ×{{ $d->quantity }}
-                                            @if($d->size) <span class="opacity-60">({{ $d->size }})</span> @endif
+                                            @if ($d->size) <span class="opacity-60">({{ $d->size }})</span> @endif
                                         </span>
                                     @endforeach
-                                    @if($tx->details->count() > 3)
+                                    @if ($tx->details->count() > 3)
                                         <span class="badge badge-blue text-[10px]">+{{ $tx->details->count() - 3 }} lagi</span>
                                     @endif
                                 </div>
@@ -300,7 +300,7 @@
                                 <p class="font-bold text-gray-800 dark:text-white">Rp
                                     {{ number_format($tx->total_amount, 0, ',', '.') }}
                                 </p>
-                                @if($tx->discount_amount > 0)
+                                @if ($tx->discount_amount > 0)
                                     <p class="text-[10px] text-amber-600 mt-0.5">
                                         Hemat Rp {{ number_format($tx->discount_amount, 0, ',', '.') }}
                                     </p>
@@ -310,7 +310,7 @@
                                 </p>
                             </td>
                             {{-- Kasir (Admin only) --}}
-                            @if(auth()->user()->role === 'admin')
+                            @if (auth()->user()->role === 'admin')
                                 <td class="px-4 py-3.5 hidden xl:table-cell">
                                     <div class="flex items-center gap-1.5">
                                         <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
@@ -343,7 +343,7 @@
                                         <i class="fas fa-list-ul text-xs"></i>
                                     </button>
                                     {{-- Retur (Admin) --}}
-                                    @if(auth()->user()->role === 'admin')
+                                    @if (auth()->user()->role === 'admin')
                                         <button type="button" onclick="openReturnModalTx({{ $tx->id }})"
                                             class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                             title="Buat Retur">
@@ -357,7 +357,7 @@
                         <tr id="detail-{{ $tx->id }}" class="hidden bg-emerald-50/30 dark:bg-emerald-900/10">
                             <td colspan="{{ auth()->user()->role === 'admin' ? 8 : 7 }}" class="px-6 py-4">
                                 <div class="flex flex-wrap gap-3">
-                                    @foreach($tx->details as $d)
+                                    @foreach ($tx->details as $d)
                                         <div
                                             class="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl px-3 py-2 shadow-sm border border-gray-100 dark:border-gray-700">
                                             <div class="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -370,7 +370,7 @@
                                                 </p>
                                                 <p class="text-[10px] text-gray-400">
                                                     {{ $d->quantity }} × Rp {{ number_format($d->price, 0, ',', '.') }}
-                                                    @if($d->size) · Ukuran: <span class="font-medium">{{ $d->size }}</span> @endif
+                                                    @if ($d->size) · Ukuran: <span class="font-medium">{{ $d->size }}</span> @endif
                                                 </p>
                                             </div>
                                             <div class="ml-2 text-right">
@@ -403,7 +403,7 @@
                                     </div>
                                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tidak ada transaksi
                                         ditemukan</p>
-                                    @if($search || $paymentId || $customerId)
+                                    @if ($search || $paymentId || $customerId)
                                         <a href="{{ route('transactions.index') }}"
                                             class="text-emerald-500 text-xs hover:underline">
                                             Hapus filter untuk melihat semua
@@ -420,7 +420,7 @@
         </div>
 
         {{-- Pagination --}}
-        @if($transactions->hasPages())
+        @if ($transactions->hasPages())
             <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                 {{ $transactions->links('vendor.tailwind') }}
             </div>
@@ -591,7 +591,7 @@
                                 <i class="fas fa-comment text-red-500 mr-1"></i> Alasan Retur
                             </label>
                             <div class="flex flex-wrap gap-1.5 mb-2">
-                                @foreach(['Produk rusak/cacat', 'Salah ukuran', 'Tidak sesuai pesanan', 'Produk tidak berfungsi'] as $reason)
+                                @foreach (['Produk rusak/cacat', 'Salah ukuran', 'Tidak sesuai pesanan', 'Produk tidak berfungsi'] as $reason)
                                     <button type="button" onclick="setReason('{{ $reason }}')"
                                         class="text-[11px] px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-red-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
                                         {{ $reason }}

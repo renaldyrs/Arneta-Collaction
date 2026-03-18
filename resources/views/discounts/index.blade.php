@@ -91,13 +91,13 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                    @forelse($discounts as $d)
-                        <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors" id="disc-row-{{ $d->id }}">
-                            <td class="px-5 py-3.5 font-semibold text-gray-800 dark:text-white">{{ $d->name }}</td>
+                    @forelse ($discounts as $item)
+                        <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors" id="disc-row-{{ $item->id }}">
+                            <td class="px-5 py-3.5 font-semibold text-gray-800 dark:text-white">{{ $item->name }}</td>
                             <td class="px-5 py-3.5">
-                                @if($d->code)
+                                @if ($item->code)
                                     <code
-                                        class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-0.5 rounded-lg text-xs font-mono font-bold">{{ $d->code }}</code>
+                                        class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-0.5 rounded-lg text-xs font-mono font-bold">{{ $item->code }}</code>
                                 @else
                                     <span class="text-gray-400 text-xs italic">Otomatis</span>
                                 @endif
@@ -105,25 +105,25 @@
                             <td class="px-5 py-3.5 text-center">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <span
-                                        class="badge {{ $d->type === 'percentage' ? 'badge-purple' : 'badge-blue' }}">{{ $d->type === 'percentage' ? '%' : 'Rp' }}</span>
+                                        class="badge {{ $item->type === 'percentage' ? 'badge-purple' : 'badge-blue' }}">{{ $item->type === 'percentage' ? '%' : 'Rp' }}</span>
                                     <span
-                                        class="font-bold text-orange-600 dark:text-orange-400">{{ $d->formatted_value }}</span>
+                                        class="font-bold text-orange-600 dark:text-orange-400">{{ $item->formatted_value }}</span>
                                 </div>
                             </td>
                             <td class="px-5 py-3.5 text-center text-xs text-gray-600 dark:text-gray-400">
-                                {{ $d->min_purchase > 0 ? 'Rp ' . number_format($d->min_purchase, 0, ',', '.') : '—' }}
+                                {{ $item->min_purchase > 0 ? 'Rp ' . number_format($item->min_purchase, 0, ',', '.') : '—' }}
                             </td>
                             <td class="px-5 py-3.5 text-center text-xs text-gray-600 dark:text-gray-400">
-                                {{ $d->used_count }}{{ $d->max_uses ? '/' . $d->max_uses : '' }}×
+                                {{ $item->used_count }}{{ $item->max_uses ? '/' . $item->max_uses : '' }}×
                             </td>
                             <td class="px-5 py-3.5 text-center text-xs text-gray-500 dark:text-gray-400">
-                                {{ $d->start_date ? $d->start_date->format('d/m/y') : '∞' }} –
-                                {{ $d->end_date ? $d->end_date->format('d/m/y') : '∞' }}
+                                {{ $item->start_date ? $item->start_date->format('d/m/y') : '∞' }} –
+                                {{ $item->end_date ? $item->end_date->format('d/m/y') : '∞' }}
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                @if($d->is_active && $d->isValid())
+                                @if ($item->is_active && $item->isValid())
                                     <span class="badge badge-green"><i class="fas fa-circle text-[6px]"></i> Aktif</span>
-                                @elseif(!$d->is_active)
+                                @elseif (!$item->is_active)
                                     <span class="badge badge-gray">Nonaktif</span>
                                 @else
                                     <span class="badge badge-red">Kadaluarsa</span>
@@ -132,11 +132,11 @@
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <button
-                                        onclick="openEditModal({{ $d->id }}, {{ json_encode(['name' => $d->name, 'code' => $d->code, 'type' => $d->type, 'value' => $d->value, 'min_purchase' => $d->min_purchase, 'max_uses' => $d->max_uses, 'start_date' => $d->start_date?->format('Y-m-d'), 'end_date' => $d->end_date?->format('Y-m-d'), 'is_active' => $d->is_active]) }})"
+                                        onclick="openEditModal({{ $item->id }}, {{ json_encode(['name' => $item->name, 'code' => $item->code, 'type' => $item->type, 'value' => $item->value, 'min_purchase' => $item->min_purchase, 'max_uses' => $item->max_uses, 'start_date' => $item->start_date?->format('Y-m-d'), 'end_date' => $item->end_date?->format('Y-m-d'), 'is_active' => $item->is_active]) }})"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
-                                    <button onclick="deleteDiscount({{ $d->id }}, '{{ addslashes($d->name) }}')"
+                                    <button onclick="deleteDiscount({{ $item->id }}, '{{ addslashes($item->name) }}')"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                                         <i class="fas fa-trash text-xs"></i>
                                     </button>
@@ -154,7 +154,7 @@
                 </tbody>
             </table>
         </div>
-        @if($discounts->hasPages())
+        @if ($discounts->hasPages())
             <div class="px-5 py-3.5 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/10">
                 {{ $discounts->links() }}
             </div>

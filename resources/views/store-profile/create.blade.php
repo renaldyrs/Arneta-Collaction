@@ -13,7 +13,7 @@
                 <label for="logo" class="block text-sm font-medium text-gray-700">Logo Toko</label>
                 <input type="file" name="logo" id="logo" accept="image/*"
                     class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                @error('logo')
+                @error ('logo')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
@@ -23,7 +23,7 @@
                 <label for="name" class="block text-sm font-medium text-gray-700">Nama Toko</label>
                 <input type="text" name="name" id="name" value="{{ old('name') }}"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
-                @error('name')
+                @error ('name')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
@@ -33,7 +33,7 @@
                 <label for="address" class="block text-sm font-medium text-gray-700">Alamat</label>
                 <textarea name="address" id="address" rows="3"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>{{ old('address') }}</textarea>
-                @error('address')
+                @error ('address')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
@@ -43,7 +43,7 @@
                 <label for="phone" class="block text-sm font-medium text-gray-700">Telepon</label>
                 <input type="text" name="phone" id="phone" value="{{ old('phone') }}"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
-                @error('phone')
+                @error ('phone')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
